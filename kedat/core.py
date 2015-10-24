@@ -35,6 +35,7 @@ class XlSheet:
     """Represents a light wrapper around openpyxl's Worksheet object. Provides
     convenient ways of iterating over rows which are presented as tuples.
     """
+    max_row_check = 10
     
     def __init__(self, source, sheet_name, row_offset=0, col_offset=0):
         wb = source if type(source) is Workbook else None
@@ -121,4 +122,22 @@ class XlSheet:
         if self.__generator is None:
             self.__generator = make_generator()
         return self.__generator
-
+    
+    @staticmethod
+    def find_headers(xlsheet, sample_headers, row_offset=0):
+        norm_hdrs = [h.lower() for h in sample_headers]
+        hdr_count = len(norm_hdrs)
+        
+        idx = row_offset
+        xlsheet.row_offset = row_offset
+        for row in xlsheet:
+            idx += 1
+            
+            norm_row = [str(c or '').lower() for c in row]
+            if norm_row[:hdr_count] == norm_hdrs:
+                return idx
+            
+            if (idx - row_offset) == XlSheet.max_row_check:
+                return -1
+            
+            

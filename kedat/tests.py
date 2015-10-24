@@ -38,9 +38,9 @@ class StorageTestCase(TestCase):
 class XlSheetTestCase(TestCase):
     base_dir = os.path.dirname(__file__)
     
-    def _get_xlsheet(self, row_offset=0):
+    def _get_xlsheet(self, sheet_name='students', row_offset=0):
         filepath = os.path.join(self.base_dir, 'fixtures', 'school.xlsx')
-        xsht = XlSheet(filepath, 'students', row_offset=row_offset)
+        xsht = XlSheet(filepath, sheet_name, row_offset=row_offset)
         return xsht
     
     def test_can_be_created_using_workbook_filepath(self):
@@ -119,6 +119,28 @@ class XlSheetTestCase(TestCase):
             row = xsht.next()
         self.assertEqual(2, row[0])
         self.assertEqual('Jane Doe', row[1])
+    
+    def test_can_find_headers_using_valid_samples(self):
+        xsht = self._get_xlsheet()
+        hdr_idx = XlSheet.find_headers(xsht, ['sn', 'name'])
+        self.assertEqual(7, hdr_idx)
+    
+    def test_cant_find_headers_using_invalid_samples(self):
+        xsht = self._get_xlsheet()
+        hdr_idx = XlSheet.find_headers(xsht, ['sn', 'age'])
+        self.assertEqual(-1, hdr_idx)
+    
+    def test_can_apply_offset_and_find_headers_using_valid_samples(self):
+        xsht = self._get_xlsheet( )
+        hdr_idx = XlSheet.find_headers(xsht, ['sn', 'name'], row_offset=4)
+        self.assertEqual(7, hdr_idx)
+    
+    def test_can_limit_number_rows_checked_to_find_headers(self):
+        xsht = self._get_xlsheet()
+        XlSheet.max_row_check = 4
+        hdr_idx = XlSheet.find_headers(xsht, ['sn', 'name'])
+        self.assertEqual(-1, hdr_idx)
+    
 
 
 
