@@ -6,273 +6,220 @@ from pymongo import MongoClient
 from openpyxl import load_workbook
 
 from kedat.core import XlSheet, Storage as _
-from builtins import staticmethod
 
 
-class Network:
+
+#: directory paths
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+DATA_DIR = os.path.join(BASE_DIR, '..', 'kedco_data')
+
+
+#: constants
+TRANSMISSION = 0
+INJECTION    = 1
+DISTRIBUTION = 2
+
+SOURCE_TYPES = (
+    TRANSMISSION,
+    INJECTION,
+    DISTRIBUTION
+)
+
+
+class Reader:
     
-    @staticmethod
-    def _save_station(db, station):
-        db.stations.insert_one(station)
-        print('station inserted: %s' % station.name)
-        print('  --- transformers: %s' % len(station.transformers))
-        print('  -------- feeders: %s' % (
-                sum([len(t.feeders) for t in station.transformers])))
+    def __init__(self, ws, source_type):
+        if source_type not in SOURCE_TYPES:
+            raise ValueError('Invalid source type provided')
+        self.source_type = source_type
+        self.ws = ws
     
-    @staticmethod
-    def _load_transmission_assets(db, wb):
-        ws = XlSheet(wb, 'TStations+Fdrs')
+    def get_assets(self):
+        assets_gen = lambda x:[]
+        if self.source_type == TRANSMISSION:
+            assets_gen = self._get_transmission_assets
+        elif self.source_type == INJECTION:
+            assets_gen = self._get_injection_assets
         
-        # find and extract all headers using sample headers
-        sample_hdrs = ['sn','ts.name','xfmr.id']
-        hdr_idx = XlSheet.find_headers(ws, sample_hdrs, 0)
-        if hdr_idx == -1:
-            raise Exception("Headers not found: %s" % sample_hdrs)
+        cols = self._get_cols_index_info()
+        return assets_gen(cols)
+    
+    def _get_cols_index_info(self):
+        names, indexes = (), ()
+        if self.source_type == TRANSMISSION:
+            names = ('ts_code', 'ts_name', 'xfmr_id', 'xfmr_cap', 
+                     'fdr_volt', 'fdr_name', 'fdr_code')
+            indexes = list(range(1, 5)) + list(range(8, 11))
+        elif self.source_type == INJECTION:
+            names = ('source', 'is_name', 'is_type', 'xfmr_id', 'xfmr_cap',
+                     'fdr_code', 'fdr_volt', 'fdr_name')
+            indexes = list(range(1, 6)) + list(range(9, 12))
+        return _(zip(names, indexes))
+    
+    def _get_transmission_assets(self, cols):
+        # helper
+        get = lambda r, label: r[label] or ''
         
-        # iterate rows, extract data & push into db.stations collection
-        class cols:     # enum class for col-index 
-            (ts_name, xfmr_id, xfmr_cap) = range(1, 4)
-            (fdr_volt, fdr_name, fdr_code) = range(7, 10)
+        # find headers
+        hdrs = ['sn', 'ts.code', 'ts.name', 'xfmr.id']
+        if not XlSheet.find_headers(self.ws, hdrs, 0):
+            raise Exception("Headers not found: %s" % hdrs)
         
+        # iterate rows and extract asset in nested-form
         station, feeders = None, None
-        for row in ws:
-            if row[cols.ts_name] != None:
-                # new station read; save collected station details (if any)
+        for row in self.ws:
+            # new station encountered?
+            if get(row, cols.ts_name):
                 if station:
-                    Network._save_station(db, station)
+                    yield station
                 
                 station = _({
-                    'name': row[cols.ts_name],
-                    'type': 'transmission', 
-                    'transformers': []
-                })
-            
-            if row[cols.xfmr_id] != None:
-                # new equipment read; add collected equipment detail
-                feeders = []
-                station.transformers.append(_({
-                    'name': row[cols.xfmr_id],
-                    'capacity': row[cols.xfmr_cap],
-                    'feeders': feeders 
-                }))
-            
-            feeders.append({
-                'code': row[cols.fdr_code],
-                'voltage': row[cols.fdr_volt],
-                'name': row[cols.fdr_name]
-            })
-        
-        # save last station collected
-        if station:
-            Network._save_station(db, station)
-    
-    @staticmethod
-    def _load_injection_assets(db, wb):
-        ws = XlSheet(wb, 'IStations+Fdrs')
-        
-        # find and extract all headers using sample headers
-        sample_hdrs = ['sn', 'source', 'is.name', 'is.type']
-        hdr_idx = XlSheet.find_headers(ws, sample_hdrs, 0)
-        if hdr_idx == -1:
-            raise Exception("Headers not found: %s" % sample_hdrs)
-        
-        # iterate rows, extract data & push into db.stations collection
-        class cols:     # enum class for col-index]
-            (source, is_name, is_type, xfmr_id, xfmr_cap) = range(1, 6)
-            (fdr_code, fdr_volt, fdr_name) = range(8, 11)
-        
-        station, feeders = None, None
-        for row in ws:
-            if row[cols.source] != None:
-                # new station read; save collected station details (if any)
-                if station:
-                    Network._save_station(db, station)
-                
-                is_public = row[cols.is_type].lower() == 'p'
-                station = _({
-                    'name': row[cols.is_name],
-                    'type': 'injection',
-                    'source_feeder': row[cols.source],
-                    'is_public': is_public,
-                    'transformers': []
-                })
-            
-            if row[cols.xfmr_id] != None:
-                # new transformer read; add collected transformer detail
-                feeders = []
-                station.transformers.append(_({
-                    'name': row[cols.xfmr_id],
-                    'capacity': row[cols.xfmr_cap],
-                    'feeders': feeders
-                }))
-            
-            if is_public:
-                feeders.append({
-                    'code': row[cols.fdr_code],
-                    'voltage': row[cols.fdr_volt],
-                    'name': row[cols.fdr_name]
-                })
-        
-        # save last station collected
-        if station:
-            Network._save_station(db, station)
-    
-    @staticmethod
-    def load_assets():
-        # setup mongodb stuff
-        client = MongoClient('mongodb://localhost:27017')
-        db = client.kedco
-        
-        # load workbook
-        base_dir = os.path.dirname(os.path.dirname(__file__))
-        data_dir = os.path.join(base_dir, '..', 'kedco_data')
-        filepath = os.path.join(data_dir, 'kedco-ntwk-assets.xlsx')
-        
-        wb = load_workbook(filepath)
-        Network._load_transmission_assets(db, wb)
-        Network._load_injection_assets(db, wb)
-
-
-class NetworkExt:
-    
-    @staticmethod
-    def _save_station(db, station):
-        db.stations.insert_one(station)
-        print(': station inserted: %s' % station.name)
-        print('+ --- transformers: %s' % len(station.transformers))
-    
-    @staticmethod
-    def _save_feeders(db, feeders):
-        db.feeders.insert(feeders)
-        print('+ -------- feeders: %s' % len(feeders))
-    
-    @staticmethod
-    def _load_transmission_assets(db, wb):
-        ws = XlSheet(wb, 'TStations+Fdrs')
-        
-        # find and extract all headers using sample headers
-        sample_hdrs = ['sn', 'ts.name', 'xfmr.id']
-        if not XlSheet.find_headers(ws, sample_hdrs, 0):
-            raise Exception('Headers not found: %s' % sample_hdrs)
-        
-        # iterate rows, extract data & push into collections
-        class cols:     # enum class for col-index
-            (ts_name, xfmr_id, xfmr_cap) = range(1, 4)
-            (fdr_volt, fdr_name, fdr_code) = range(7, 10)
-        
-        station, transformer, feeders = None, None, None
-        for row in ws:
-            if row[cols.ts_name] != None:
-                # new station encountered;
-                if station:
-                    NetworkExt._save_station(db, station)
-                    if feeders:
-                        NetworkExt._save_feeders(db, feeders)
-                
-                feeders = []
-                station = _({
-                    'name': row[cols.ts_name],
+                    'code': get(row, cols.ts_code),
+                    'name': get(row, cols.ts_name),
                     'type': 'transmission',
                     'transformers': []
                 })
             
-            if row[cols.xfmr_id] != None:
-                # new equipment encountered
-                transformer = _({
-                    'name': row[cols.xfmr_id],
-                    'capacity': row[cols.xfmr_cap],
-                })
-                station.transformers.append(transformer)
+            # new transformer encountered?
+            if get(row, cols.xfmr_id):
+                feeders = []
+                station.transformers.append(_({
+                    'name': get(row, cols.xfmr_id),
+                    'capacity': get(row, cols.xfmr_cap),
+                    'feeders': feeders
+                }))
             
-            feeders.append({
-                'code': row[cols.fdr_code] or '',
-                'voltage': row[cols.fdr_volt],
-                'name': row[cols.fdr_name] or '',
-                'source': {
-                    'station': station.name,
-                    'transformer': transformer.name
-                }
-            })
+            # collect feeder details
+            feeders.append(_({
+                'code': get(row, cols.fdr_code),
+                'voltage': get(row, cols.fdr_volt),
+                'name': get(row, cols.fdr_name)
+            }))
         
-        # save last station and feeders encountered
+        # return very last station
         if station:
-            NetworkExt._save_station(db, station)
-        
-            if feeders:
-                NetworkExt._save_feeders(db, feeders)
+            yield station
     
-    @staticmethod
-    def _load_injection_assets(db, wb):
-        ws = XlSheet(wb, 'IStations+Fdrs')
+    def _get_injection_assets(self, cols):
+        # helper
+        get = lambda r, label: r[label] or ''
         
-        # find and extract all headers using sample headers
-        sample_hdrs = ['sn', 'source', 'is.name', 'is.type']
-        if not XlSheet.find_headers(ws, sample_hdrs, 0):
-            raise Exception('Headers not found: %s' % sample_hdrs)
+        # find headers
+        hdrs = ['sn', 'source', 'is.name', 'is.type']
+        if not XlSheet.find_headers(self.ws, hdrs, 0):
+            raise Exception("Headers not found: %s" % hdrs)
         
-        # iterate rows, extract data & push into collections
-        class cols:     # enum class for col-index
-            (source, is_name, is_type, xfmr_id, xfmr_cap) = range(1, 6)
-            (fdr_code, fdr_volt, fdr_name) = range(9, 12)
-        
-        station, transformer, feeders = None, None, None
-        for row in ws:
+        # iterate rows, extract data & push into collection
+        station, feeders, count = None, None, 0
+        for row in self.ws:
+            # new station encountered
             if row[cols.source] != None:
-                # new station encountered
-                if station:
-                    NetworkExt._save_station(db, station)
-                    if feeders:
-                        NetworkExt._save_feeders(db, feeders)
+                if station: 
+                    yield station
                 
-                is_public = row[cols.is_type].lower() == 'p'
-                feeders= []
+                is_public = get(row, cols.is_type).lower() == 'p'
+                count += 1
                 station = _({
-                    'name': row[cols.is_name],
+                    'code': 'IS{:0>2}'.format(hex(count)[2:]).upper(),
+                    'name': get(row, cols.is_name),
                     'type': 'injection',
-                    'source_feeder': row[cols.source],
+                    'source_feeder': get(row, cols.source),
                     'is_public': is_public,
                     'transformers': []
                 })
             
+            # new transformer encountered
             if row[cols.xfmr_id] != None:
-                # new transformer encountered
-                transformer = _({
-                    'name': row[cols.xfmr_id],
-                    'capacity': row[cols.xfmr_cap]
-                })
-                station.transformers.append(transformer)
+                feeders = []
+                station.transformers.append(_({
+                    'name': get(row, cols.xfmr_id),
+                    'capacity': get(row, cols.xfmr_cap),
+                    'feeders': feeders
+                }))
             
-            if station.is_public:
-                feeders.append({
-                    'code': row[cols.fdr_code] or '',
-                    'voltage': row[cols.fdr_volt],
-                    'name': row[cols.fdr_name] or '',
-                    'source': {
-                        'station': station.name,
-                        'transformer': transformer.name,
-                    }
-                })
+            if is_public:
+                feeders.append(_({
+                    'code': get(row, cols.fdr_code),
+                    'voltage': get(row, cols.fdr_volt),
+                    'name': get(row, cols.fdr_name)
+                }))
         
-        # save last station and feeders encountered
+        # return very last station
         if station:
-            NetworkExt._save_station(db, station)
-            if feeders:
-                NetworkExt._save_feeders(db, feeders)
+            yield station
+
+
+class Loader:
     
     @staticmethod
-    def load_assets():
-        conn = MongoClient('mongodb://localhost:27017')
-        db = conn.kedco_ext
+    def _save_asset(db, asset):
+        db.assets.insert_one(asset)
+        msg_fmt = 'assets:: station: {0:<30}, transformers: {1:<3}, feeders: {2:<3}'
+        args = (asset.name, len(asset.transformers),
+                sum([len(t.feeders) for t in asset.transformers]))
+        print(msg_fmt.format(*args))
+
+    @staticmethod
+    def load_network_assets(db, wb):
+        args_list = (
+            (TRANSMISSION, 'TStations+Fdrs'),
+            (INJECTION,    'IStations+Fdrs')
+        )
+        for args in args_list:
+            ws = XlSheet(wb, args[1])
+            reader = Reader(ws, args[0])
+            for asset in reader.get_assets():
+                Loader._save_asset(db, asset)
+    
+    @staticmethod
+    def _save_as_stations_feeders(db, asset):
+        def split(asset):
+            feeders = []
+            for t in asset.transformers:
+                for feeder in t.feeders:
+                    f = feeder.copy()
+                    f.update({
+                        'source': {
+                            'station': asset.code,
+                            'transformer': t.name
+                        }
+                    })
+                    feeders.append(f)
+                del t['feeders']
+            return (asset, feeders)
         
-        base_dir = os.path.dirname(os.path.dirname(__file__))
-        data_dir = os.path.join(base_dir, '..', 'kedco_data')
-        filepath = os.path.join(data_dir, 'kedco-ntwk-assets.xlsx')
+        station, feeders = split(asset)
+        db.stations.insert(station)
         
-        wb = load_workbook(filepath)
-        NetworkExt._load_transmission_assets(db, wb)
-        NetworkExt._load_injection_assets(db, wb)
+        if feeders:
+            db.feeders.insert(feeders)
+        
+        msg_fmt = 'assets:: station: {0:<30}, transformers: {1:<3}, feeders: {2:<3}'
+        args = (station.name, len(station.transformers), len(feeders))
+        print(msg_fmt.format(*args))
+    
+    @staticmethod
+    def _load_network_stations_feeders(db, wb):
+        args_list = (
+            (TRANSMISSION, 'TStations+Fdrs'),
+            (INJECTION,    'IStations+Fdrs')
+        )
+        for args in args_list:
+            ws = XlSheet(wb, args[1])
+            reader = Reader(ws, args[0])
+            for asset in reader.get_assets():
+                Loader._save_as_stations_feeders(db, asset)
+    
+    @staticmethod
+    def load():
+        filename = os.path.join(DATA_DIR, 'kedco-ntwk-assets.xlsx')
+        wb = load_workbook(filename)
+        db = MongoClient().kedco
+        
+        Loader._load_network_stations_feeders(db, wb)
 
 
 if __name__ == '__main__':
-    NetworkExt.load_assets()
-    print('done!')
+    Loader.load()
+    pass
+
