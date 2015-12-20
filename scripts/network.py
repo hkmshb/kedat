@@ -65,9 +65,9 @@ class Reader:
                      'fdr_volt', 'fdr_name', 'fdr_code')
             indexes = list(range(1, 6)) + list(range(9, 12))
         elif self.source_type == INJECTION:
-            names = ('source', 'is_name', 'is_loc', 'is_type', 'xfmr_id', 'xfmr_cap',
-                     'fdr_code', 'fdr_volt', 'fdr_name')
-            indexes = list(range(1, 7)) + list(range(10, 13))
+            names = ('source', 'is_code', 'is_name', 'is_loc', 'is_type', 
+                     'xfmr_id', 'xfmr_cap', 'fdr_code', 'fdr_volt', 'fdr_name')
+            indexes = list(range(1, 8)) + list(range(11, 14))
         elif self.source_type == DISTRIBUTION:
             names = ('fdr_volt', 'fdr_name', 'ss_name', 'ss_cap', 'ss_type')
             indexes = list(range(1, 3)) + list(range(4, 7))
@@ -122,7 +122,7 @@ class Reader:
         get = self._get_row_entry
         
         # find headers
-        hdrs = ['sn', 'source', 'is.name', 'is.loc', 'is.type']
+        hdrs = ['sn', 'source', 'is.code', 'is.name', 'is.loc', 'is.type']
         self._ensure_headers_exist(hdrs)
         
         # iterate rows, extract data & push into collection
@@ -136,7 +136,7 @@ class Reader:
                 is_public = get(row, cols.is_type).lower() == 'p'
                 count += 1
                 station = _({
-                    'code': 'IS{:0>2}'.format(hex(count)[2:]).upper(),
+                    'code': get(row, cols.is_code),
                     'name': get(row, cols.is_name),
                     'location': get(row, cols.is_loc),
                     'type': 'injection',
@@ -331,12 +331,4 @@ def collect_injss_sorted(db, wb):
             ))
         f.flush()
 
-
-
-if __name__ == '__main__':
-    #run(clear_mongo_db)
-    #run(Loader._loadMV_network_stations_feeders)
-    #run(Loader._loadLV_network_stations)
-    run(collect_injss_sorted)
-    print('done!')
 
