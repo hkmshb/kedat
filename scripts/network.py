@@ -67,10 +67,11 @@ class Reader:
         elif self.source_type == INJECTION:
             names = ('source', 'is_code', 'is_name', 'is_loc', 'is_type', 
                      'xfmr_id', 'xfmr_cap', 'fdr_code', 'fdr_volt', 'fdr_name')
-            indexes = list(range(1, 8)) + list(range(11, 14))
+            indexes = list(range(1, 8)) + list(range(10, 13))
         elif self.source_type == DISTRIBUTION:
-            names = ('fdr_volt', 'fdr_name', 'ss_name', 'ss_cap', 'ss_type')
-            indexes = list(range(1, 3)) + list(range(4, 7))
+            names = ('fdr_volt', 'fdr_name', 
+                     'ss_loc', 'ss_name', 'ss_cap', 'ss_type', 'ss_code')
+            indexes = list(range(1, 8)) 
         return _(zip(names, indexes))
     
     def _get_transmission_assets(self, cols):
@@ -92,8 +93,8 @@ class Reader:
                 station = _({
                     'code': get(row, cols.ts_code),
                     'name': get(row, cols.ts_name),
-                    'location': get(row, cols.ts_loc),
                     'type': 'transmission',
+                    'state': get(row, cols.ts_loc),
                     'transformers': []
                 })
             
@@ -138,9 +139,9 @@ class Reader:
                 station = _({
                     'code': get(row, cols.is_code),
                     'name': get(row, cols.is_name),
-                    'location': get(row, cols.is_loc),
                     'type': 'injection',
                     'source_feeder': get(row, cols.source),
+                    'state': get(row, cols.is_loc),
                     'is_public': is_public,
                     'transformers': []
                 })
@@ -170,14 +171,15 @@ class Reader:
         get = self._get_row_entry
         
         # find headers
-        hdrs = ['fdr.sn', 'fdr.volt', 'fdr.name', 'ss.sn']
+        hdrs = ['fdr.sn', 'fdr.volt', 'fdr.name', 'ss.loc', 'ss.name']
         self._ensure_headers_exist(hdrs)
         
         # iterate rows and extract asset in nested-form
-        source_feeder, skip_count = None, 0
+        source_feeder, location, skip_count = None, None, 0
         for row in self.ws:
             # new source_feeder encountered
             if get(row, cols.fdr_name):
+                location = get(row, cols.ss_loc)
                 source_feeder = _({
                     'volt': get(row, cols.fdr_volt),
                     'name': get(row, cols.fdr_name).strip().title(),
@@ -191,16 +193,17 @@ class Reader:
                 continue
             
             ## from original list sub-station name needs to be normalized
-            ss_name = get(row, cols.ss_name).title().strip()
-            if ss_name.endswith(','):
+            ss_name = get(row, cols.ss_name).strip()
+            if ss_name.endswith(',') or ss_name.endswith('- '):
                 ss_name = (ss_name[:-1]).strip()
             
             is_public = get(row, cols.ss_type).lower() == 'p'
             station = _({
-                'code': 'Sx',
+                'code': get(row, cols.ss_code),
                 'name': ss_name,
                 'type': 'distribution',
                 'source_feeder': source_feeder.name,
+                'state': location,
                 'is_public': is_public,
                 'transformers': [_({
                     'name': 'TR1',
@@ -310,25 +313,102 @@ def run(task):
     task(db, wb)
 
 
-def clear_mongo_db(db, wb):
+def clear_kedco_db(db, wb):
     db.stations.delete_many({})
     db.feeders.delete_many({})
 
 
-def collect_injss_sorted(db, wb):
-    cursor = db.stations\
-               .find({'type':'injection'})\
-               .sort([('is_public', pymongo.ASCENDING),
-                      ('location', pymongo.ASCENDING),
-                      ('name', pymongo.ASCENDING)])
+def build_injss_feeder(loc):
+    def func(db, wb):
+        # collect codes for public inj ss
+        cursor = db.stations\
+                   .find({'type': 'injection', 'is_public': True, 
+                          'state': loc})\
+                   .sort('code', pymongo.ASCENDING)
+        stations = [(s['code'], s['name']) for s in cursor]
+        
+        # collect feeders for public inj ss
+        cursor = db.feeders\
+                   .find({'voltage': 11, 'name': {'$ne':' '}})\
+                   .sort([('source.station', pymongo.ASCENDING),
+                          ('name', pymongo.ASCENDING)])
+        
+        feeders = {}
+        for f in cursor:
+            key = f['source']['station']
+            if key not in feeders:
+                feeders[key] = []
+            feeders[key].append(f['name'])
+        
+        # save to file
+        missing_stations = []
+        target_filename = os.path.join(DATA_DIR, 'inj+fdrs.txt')
+        
+        with open(target_filename, 'w') as f:
+            for station in stations:
+                if station[0] not in feeders:
+                    missing_stations.append(station)
+                    continue
+                
+                sfeeders = feeders[station[0]]
+                f.write('{},{},{}\n'.format(
+                    station[0], station[1], sfeeders[0]
+                ))
+                
+                for sfeeder in sfeeders[1:]:
+                    f.write(', ,{}\n'.format(sfeeder))
+            
+            if missing_stations:
+                f.write('\n==========\n')
+                for ms in missing_stations:
+                    f.write('{},{}\n'.format(*ms))
+            
+            f.flush()
+    return func
 
-    with open(os.path.join(DATA_DIR, 'injss-sorted.txt'), 'w') as f:
-        for station in cursor:
-            f.write('{}, {}, {}\n'.format(
-                'p' if station['is_public'] else 'd',
-                station['location'],
-                station['name']
+
+def reorder_distss(db, wb):
+    assets = {}
+    
+    # read in dist stations from excel
+    ws = XlSheet(wb, 'DStations-11KV')
+    reader = Reader(ws, DISTRIBUTION)
+    for asset in reader.get_assets():
+        sf = asset['source_feeder']
+        if sf not in assets:
+            assets[sf] = []
+        assets[sf].append(asset)
+        
+    # read in feeders order
+    ws2 = XlSheet(wb, 'Sheet1')
+    hdrs = ['is.code', 'is.name', 'fdr.name', 'fdr.code']
+    if not XlSheet.find_headers(ws2, hdrs, 0):
+        raise Exception('Headers not found: %s' % hdrs)
+    
+    # iterate rows and extract asset in nested-for
+    not_found, counter = [], 0
+    filename = os.path.join(DATA_DIR, 'dist-ss.txt')
+    with open(filename, 'w') as f:
+        for fname in [(r[2] or '').strip() for r in ws2]:
+            if fname not in assets:
+                not_found.append(fname)
+                continue
+            
+            feeders = assets[fname]
+            feeder = feeders[0]
+            counter += 1
+            f.write('{},11,{},{},{}\n'.format(
+                counter,
+                feeder.source_feeder,
+                feeder.name,
+                feeder.transformers[0].capacity
             ))
+            
+            for feeder in feeders[1:]:
+                f.write(',,,{},{}\n'.format(
+                    feeder.name,
+                    feeder.transformers[0].capacity
+                ))
         f.flush()
-
-
+    
+    
