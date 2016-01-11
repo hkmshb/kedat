@@ -1,4 +1,10 @@
 __pycache__/
+[_.]ignore/
+[Bb]in/
+[Oo]bj/
+.vs/
 
 
 .*project
+*.pyproj
+*.sln
