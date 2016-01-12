@@ -4,6 +4,7 @@ This script runs the application using a development server.
 import os
 import sys
 import bottle
+from beaker.middleware import SessionMiddleware
 
 
 # modify sys
@@ -23,13 +24,20 @@ if '--debug' in sys.argv[1:] or 'SERVER_DEBUG' in os.environ:
 def wsgi_app():
     """Returns the application to make available through wfastcgi. This is used
     when the site is published to Microsoft Azure."""
-    return bottle.default_app()
+    session_options = {
+        'session.type': 'file',
+        'session.cookie_expires': 300,
+        'session.data_dir': './session.dat',
+        'session.auto': True
+    }
+    app = SessionMiddleware(bottle.default_app(), session_options)
+    return app
 
 if __name__ == '__main__':    
     STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static').replace('\\', '/')
     HOST = os.environ.get('SERVER_HOST', 'localhost')
     try:
-        PORT = int(os.environ.get('SERVER_PORT', '5555'))
+        PORT = int(os.environ.get('XSERVER_PORT', '5555'))
     except ValueError:
         PORT = 5555
 
@@ -43,4 +51,4 @@ if __name__ == '__main__':
 
 
     # Starts a local test server.
-    bottle.run(server='wsgiref', host=HOST, port=PORT)
+    bottle.run(app=wsgi_app(), server='wsgiref', host=HOST, port=PORT)

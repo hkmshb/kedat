@@ -31,6 +31,40 @@
     </div>
 
     <div class="container body-content">
+
+       % session = request.environ.get('beaker.session', {})
+       % if 'errors' in session:
+            % msg_errors = session.get('errors', [])
+            % del session['errors']
+       % end
+       % if '__all__' in session:
+            % msg_all = session.get('__all__', [])
+            % del session['__all__']
+       % end
+       % session.save()
+
+        % if defined('msg_errors'):
+        <div class="alert alert-danger alert-dismissible errors">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          <ul>
+          %for m in msg_errors:
+            <li>{{ m }}</li>
+          %end
+          </ul>
+        </div>
+        % end
+
+        % if defined('msg_all'):
+        <div class="alert alert-info alert-dismissible info">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          <ul>
+          %for m in msg_all:
+            <li>{{ m }}</li>
+          %end
+          </ul>
+        </div>
+        % end
+
         {{!base}}
         <hr />
         <footer>
