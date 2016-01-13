@@ -8,14 +8,17 @@ from bottle import view as view_fn
 import db
 import settings
 from services.forms import SyncForm
-from services import api
-from services import transform
+from services import api, stats, transform
 
 
 DATE_FMT='%Y-%m-%d'
 
 def view(tpl_name):
-    return view_fn(tpl_name, request=request)
+    context = {
+        'request': request,
+        'year': datetime.now().year,
+    }
+    return view_fn(tpl_name, **context)
 
 
 @route('/')
@@ -25,21 +28,25 @@ def home():
     """Renders the home page."""
     # display summary for most recent captures
     form_id = 'f000_cf04_KN'
-    dao = db.CaptureSummary()
+    #dao = db.CaptureSummary()
     
-    summary_type = db.SUMMARY_TODAY
-    captures = dao.get_today(form_id)
-    if not captures:
-        summary_type = db.SUMMARY_WEEK
-        captures = dao.get_this_week(form_id)
-
+    #summary_type = db.SUMMARY_TODAY
+    #captures = dao.get_today(form_id)
+    #if not captures:
+    #    summary_type = db.SUMMARY_WEEK
+    #    captures = dao.get_this_week(form_id)
+    
+    summary_type = db.SUMMARY_MONTH
+    results = stats.summarize_capture(form_id, db.SUMMARY_WEEK)
     return {
         'title': 'Capture Summary',
-        'year': datetime.now().year,
-        'records': captures or [],
+        'records': results[0] or [],
+        'ind_summary': results[1],
+        'team_summary': results[2],
         'summary_type': ('Today'
             if summary_type == db.SUMMARY_TODAY
-            else 'This Week')
+            else 'This Week' if summary_type == db.SUMMARY_WEEK
+            else 'This Month')
     }
 
 
@@ -54,7 +61,6 @@ def activities():
     records = dao.get_all(page, page_size)
     return {
         'title': 'Activities',
-        'year': datetime.now().year,
         'activities': records
     }
 
@@ -101,7 +107,6 @@ def perform_activity():
 
     return {
         'title': 'Activities',
-        'year': datetime.now().year,
     }
 
 
@@ -112,7 +117,6 @@ def contact():
     return dict(
         title='Contact',
         message='Your contact page.',
-        year=datetime.now().year
     )
 
 @route('/about')
@@ -122,7 +126,6 @@ def about():
     return dict(
         title='About',
         message='Your application description page.',
-        year=datetime.now().year
     )
 
 

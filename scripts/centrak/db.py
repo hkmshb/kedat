@@ -114,6 +114,27 @@ class CaptureSummary:
 
 class Capture:
     
+    def get_all(self, form_id):
+        return self._get_records(db.captures.find())
+
+    def get_today(self, form_id):
+        return self.get_by_date(form_id, datetime.now())
+    
+    def get_this_week(self, form_id):
+        wk_start = datetime.now() + rd.relativedelta(weekday=rd.MO)
+        wk_end = datetime.now() + rd.relativedelta(weekday=rd.FR)
+        return self.get_by_date_range(form_id, wk_start, wk_end)
+
+    def get_by_date_range(self, form_id, from_value, to_value):
+        cursor = db.captures.find({
+            'form_id': form_id,
+            'datetime_today': {'$gte': from_value.strftime(DATE_FMT) },
+            'datetime_today': {'$lte': to_value.strftime(DATE_FMT) },
+        })
+        return self._get_records(cursor)
+    
     def save_many(self, records):
         db.captures.insert_many(records)
 
+    def _get_records(self, cursor):
+        return list(cursor)
