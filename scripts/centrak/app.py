@@ -51,4 +51,6 @@ if __name__ == '__main__':
 
 
     # Starts a local test server.
-    bottle.run(app=wsgi_app(), server='wsgiref', host=HOST, port=PORT)
+    bottle.run(
+        app=wsgi_app(), reloader=True,
+        server='wsgiref', host=HOST, port=PORT)

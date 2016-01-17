@@ -47,7 +47,16 @@ def get_instances(name, start=None, start_date=None):
 
 def get_captures(activity):
     query = '{"datetime_today": "%s"}' % activity['sync_date']
-    return _get_records(activity['sync_table'], query=query)
+    start = 0
+    try:
+        start = int(activity['record_count']) + 1
+    except:
+        pass
+    return _get_records(
+        activity['sync_table'], 
+        start=start,
+        query=query
+    )
 
 
 def _get_records(name, start=0, limit=100, query=None):

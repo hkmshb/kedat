@@ -8,7 +8,7 @@ from bottle import view as view_fn
 import db
 import settings
 from services.forms import SyncForm
-from services import api, stats, transform
+from services import api, stats, tasks, transform
 
 
 DATE_FMT='%Y-%m-%d'
@@ -22,21 +22,24 @@ def view(tpl_name):
 
 
 @route('/')
-@route('/home')
 @view('index')
+def index():
+    form_id = 'f000_cf04_KN'
+    result = tasks.get_form_summary(form_id)
+    return {
+        'title': 'Capture Summary',
+        'records': result
+    }
+
+
+@route('/home2')
+@view('index2')
 def home():
     """Renders the home page."""
     # display summary for most recent captures
     form_id = 'f000_cf04_KN'
-    #dao = db.CaptureSummary()
-    
-    #summary_type = db.SUMMARY_TODAY
-    #captures = dao.get_today(form_id)
-    #if not captures:
-    #    summary_type = db.SUMMARY_WEEK
-    #    captures = dao.get_this_week(form_id)
-    
     summary_type = db.SUMMARY_MONTH
+
     results = stats.summarize_capture(form_id, db.SUMMARY_WEEK)
     return {
         'title': 'Capture Summary',
@@ -89,10 +92,13 @@ def perform_activity():
             print('chunk {0:0>2}: processing...'.format(chunk), end='')
             count += len(captures)
 
-            for capture in captures:
-                transformed.append(transform.to_flatten_dict(capture))
-            
-            dao_capture.save_many(transformed)
+            if captures:
+                for capture in captures:
+                    transformed.append(transform.to_flatten_dict(capture))
+                
+                # save transformed documents    
+                dao_capture.save_many(transformed)
+
             print(', saved (%s)' % len(captures))
             transformed = []
             chunk += 1
