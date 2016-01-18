@@ -6,11 +6,7 @@ import sys
 import bottle
 from beaker.middleware import SessionMiddleware
 
-
-# modify sys
-PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
-KEDAT_ROOT = os.path.abspath(os.path.join(PROJECT_ROOT, '..', '..'))
-sys.path.append(KEDAT_ROOT)
+import settings
 
 
 # routes contains the HTTP handlers for our server and must be imported.
@@ -27,14 +23,14 @@ def wsgi_app():
     session_options = {
         'session.type': 'file',
         'session.cookie_expires': 300,
-        'session.data_dir': './session.dat',
+        'session.data_dir': './session-dat',
         'session.auto': True
     }
     app = SessionMiddleware(bottle.default_app(), session_options)
     return app
 
 if __name__ == '__main__':    
-    STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static').replace('\\', '/')
+    STATIC_ROOT = os.path.join(settings.BASE_DIR, 'static').replace('\\', '/')
     HOST = os.environ.get('SERVER_HOST', 'localhost')
     try:
         PORT = int(os.environ.get('XSERVER_PORT', '5555'))
@@ -48,9 +44,8 @@ if __name__ == '__main__':
         the server should be configured to serve the static files."""
         return bottle.static_file(filepath, root=STATIC_ROOT)
 
-
-
     # Starts a local test server.
     bottle.run(
         app=wsgi_app(), reloader=True,
-        server='wsgiref', host=HOST, port=PORT)
+        server='wsgiref', host=HOST, port=PORT
+    )

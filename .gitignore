@@ -1,4 +1,5 @@
 __pycache__/
+session-dat/
 [_.]ignore/
 [Bb]in/
 [Oo]bj/
@@ -10,5 +11,4 @@ __pycache__/
 *.config
 *.user
 *.sln
-*.dat
-
+*.log

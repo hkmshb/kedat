@@ -9,11 +9,23 @@
     padding-right: 15px;
 }
 
+.not-front {
+    padding-top: 15px;
+}
+
 /* Set width on the form input elements since they're 100% wide by default */
 input,
 select,
 textarea {
+    font-size: 13px;
     max-width: 280px;
+}
+
+.btn,
+.form-control {
+    padding: 3px 5px;
+    line-height: 22px;
+    height: 30px;
 }
 
 /* styles for validation helpers */
@@ -41,12 +53,22 @@ input[type="checkbox"].input-validation-error {
     display: none;
 }
 
-/*
- * EXTRAS
- ******************/
-.heading { 
-  text-transform: uppercase;
-  font-size: 16pt; font-weight: bold;
-  padding-bottom: 10px; 
+.jumbotron h1 {
+    font-size: 32px;
+    font-weight: bold;
+    margin-top: -10px;
+    padding-bottom: 10px;
 }
 
+.table-label {
+    font-weight: normal;
+    margin-top: -5px;
+}
+
+.panel-table {
+    margin-bottom: 0;
+}
+
+.panel-table tr:first-child td {
+    border-top: none;
+}

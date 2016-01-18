@@ -3,12 +3,11 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }} - CENTrak Scripts</title>
+    <title>{{ title }} - CENTrak</title>
     <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="/static/css/site.css" />
     <script src="/static/js/modernizr-2.6.2.js"></script>
 </head>
-
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
@@ -18,63 +17,50 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a href="/" class="navbar-brand">CENTrak Scripts</a>
+                <a href="/" class="navbar-brand">CENTrak</a>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li><a href="/home">Home</a></li>
-                    <li><a href="/about">About</a></li>
-                    <li><a href="/contact">Contact</a></li>
+                    <li><a href="/xforms/">XForms</a></li>
                 </ul>
             </div>
         </div>
     </div>
 
-    <div class="container body-content">
+    <div class="container body-content {{ "front" if defined('is_front') else "not-front" }}">
+        % messages = get_session()['messages']
+        % msg_pass = messages.get('pass', None)
+        % msg_fail = messages.get('fail', None)
+        % msg_warn = messages.get('warn', None)
 
-       % session = request.environ.get('beaker.session', {})
-       % if 'errors' in session:
-            % msg_errors = session.get('errors', [])
-            % del session['errors']
-       % end
-       % if '__all__' in session:
-            % msg_all = session.get('__all__', [])
-            % del session['__all__']
-       % end
-       % session.save()
+        % message_list = ((msg_pass, 'success'), (msg_fail, 'danger'), (msg_warn, 'warning'))
 
-        % if defined('msg_errors'):
-        <div class="alert alert-danger alert-dismissible errors">
-          <button type="button" class="close" data-dismiss="alert">&times;</button>
-          <ul>
-          %for m in msg_errors:
-            <li>{{ m }}</li>
-          %end
-          </ul>
+        % messages['pass'] = []
+        % messages['fail'] = []
+        % messages['warn'] = []
+
+        % for entry in message_list:
+          % if entry[0]:
+        <div class="alert alert-{{entry[1]}} alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert">&times</button>
+            <ul>
+            % for m in entry[0]:
+              <li>{{ m }}</li>
+            % end
+            </ul>
         </div>
+          % end
         % end
-
-        % if defined('msg_all'):
-        <div class="alert alert-info alert-dismissible info">
-          <button type="button" class="close" data-dismiss="alert">&times;</button>
-          <ul>
-          %for m in msg_all:
-            <li>{{ m }}</li>
-          %end
-          </ul>
-        </div>
-        % end
-
+        
         {{!base}}
+
         <hr />
         <footer>
-            <p>&copy; {{ year }} - CENTrak Scripts</p>
+            <p>&copy; {{ year }} - CENTrak<p>
         </footer>
     </div>
-
+    
     <script src="/static/js/jquery-1.10.2.min.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
-    <script src="/static/js/respond.js"></script>
-
 </body>
 </html>
