@@ -18,14 +18,16 @@ db = conn.test_centrak
 class XForm:
 
     @staticmethod
-    def get_all():
-        cur = db.xforms.find({})\
+    def get_all(include_inactive=False):
+        qry = {} if include_inactive else {'active': True}
+        cur = db.xforms.find(qry)\
                 .sort('id', pymongo.ASCENDING)
         return paginate(cur)
     
     @staticmethod
     def get_by_id(id):
-        return _(db.xforms.find_one({'id': id }))
+        record = db.xforms.find_one({'id_string': id })
+        return _(record or {})
 
     @staticmethod
     def insert_one(record):
@@ -33,14 +35,7 @@ class XForm:
     
     @staticmethod
     def set_active(id, status):
-        try:
-            id = int(id)
-            return db.xforms.update_one(
-                {'id': id},
-                {'$set': {'active': status}}
-            )
-        except:
-            return 0
-                
-        
-
+        return db.xforms.update_one(
+            {'id_string': id},
+            {'$set': {'active': status}}
+        )

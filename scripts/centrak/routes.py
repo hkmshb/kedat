@@ -5,6 +5,7 @@ from datetime import datetime
 from bottle import (
     post, route, request, response, redirect, template,
     view as fn_view)
+from kedat.core import Storage as _
 
 import db                
 from utils import get_session, write_log
@@ -35,7 +36,7 @@ def index():
 @route('/xforms/')
 @view('xforms')
 def xforms():
-    forms = db.XForm.get_all()
+    forms = db.XForm.get_all(include_inactive=True)
     return {
         'year': datetime.now().year,
         'title': 'XForms',
@@ -50,12 +51,13 @@ def xforms_sync():
         failed, reports = [], []
 
         for f in forms:
-            exist = db.XForm.get_by_id(f['id'])
+            exist = db.XForm.get_by_id(f['id_string'])
             if exist: 
                 continue
         
             try:
                 f['date_created'] = datetime.now().strftime(FMT_SHORTDATE)
+                f['active'] = False
                 db.XForm.insert_one(f)
             except Exception as ex:
                 failed.append(f)

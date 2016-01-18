@@ -16,24 +16,24 @@
             <div class="panel-body">
                 <table class="table panel-table">
                     <tbody>
+                    % active_ids, all_ids = [], []
                     % if records:
-                        % active_ids, all_ids = [], []
                         % for r in records:
                         <tr><td>{{ r.title }}</td>
                             <td>{{ r.date_created }}</td>
                             <td><label for="activate-{{ r.id }}" class="table-label">
-                                    <input type="checkbox" name="activate" value="{{ r.id }}"
+                                    <input type="checkbox" name="activate" value="{{ r.id_string }}"
                                            id="activate-{{ r.id }}" {{ "checked" if r.active else "" }} />
                                     Activate
                                 </label>
                             </td></tr>
-                            % all_ids.append(str(r.id))
+                            % all_ids.append(str(r.id_string))
                             % if r.active:
-                                % active_ids.append(str(r.id)) 
+                                % active_ids.append(str(r.id_string)) 
                             % end
                         % end
                     % else:
-                        <tr><td colspan="3">Empty!</td></tr>
+                        <tr><td colspan="3">No data Available. Perform <b><i>Sync</i></b> to get XForms from server!</td></tr>
                     % end
                     </tbody>
                 </table>
