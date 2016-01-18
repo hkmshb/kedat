@@ -39,3 +39,13 @@ class XForm:
             {'id_string': id},
             {'$set': {'active': status}}
         )
+
+
+class Capture:
+
+    @staticmethod
+    def get_by_form(form_id, paginate=True):
+        cur = db.captures.find({'_xform_id_string': form_id})
+        return paginate(cur) if paginate else cur
+
+

@@ -72,3 +72,39 @@ input[type="checkbox"].input-validation-error {
 .panel-table tr:first-child td {
     border-top: none;
 }
+
+.table th.lvsep,
+.table td.lvsep {
+    border-left: solid 1px #ddd;
+}
+
+.col-shade {
+    background-color: #eee;
+}
+
+.calendar {
+    color: #fff;
+    padding: 7px;
+    margin-top: -100px;
+    background-color: rebeccapurple;
+    border-radius: 5px;
+    line-height: 18px;
+}
+
+.calendar i {
+    font-size: 36px;
+}
+
+.calendar .body {
+    margin-left: 10px;
+    text-align: center;
+}
+
+.calendar .tdy {
+    font-size: 14px;   
+    font-weight: bold;
+}
+
+.calendar .wk {
+    font-size: 12px;        
+}

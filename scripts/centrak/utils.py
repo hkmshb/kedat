@@ -3,6 +3,7 @@ Defines utility functions and classes.
 """
 import os
 from datetime import datetime
+from dateutil import relativedelta as rd
 from bottle import request
 
 from kedat.core import Storage as _
@@ -22,6 +23,7 @@ def get_session():
         session.save()
     return session
 
+
 def write_log(lines):
     try:
         filepath = os.path.join(settings.BASE_DIR, 'centrak.error.log')
@@ -34,6 +36,20 @@ def write_log(lines):
         print("WRITING TO LOG FAILED.\r\n\t%s" % str(ex))
         print("LOG LINES:\r\n%s" % ('\t'.join(lines)))
         print()
+
+
+def get_weekdate_bounds(ref_date):
+    start_date = ref_date
+    if ref_date.weekday() > 0:
+        start_date = ref_date + rd.relativedelta(weekday=rd.MO(-1))
+    end_date = ref_date + rd.relativedelta(weekday=rd.SU)
+    return (start_date, end_date)
+
+
+def get_monthdate_bounds(ref_date):
+    start_date = ref_date + rd.relativedelta(day=1, month=ref_date.month)
+    end_date = ref_date + rd.relativedelta(day=31, month=ref_date.month)
+    return (start_date, end_date)
 
 
 def paginate(cursor, qs_page='pg', qs_page_size='pg_size'):
