@@ -3,19 +3,7 @@
     <p>
         <a class="btn btn-primary" href="#">Sync Captures</a>
     </p>
-    <div class="pull-right calendar">
-        <div class="pull-left">
-            <i class="glyphicon glyphicon-calendar"></i>
-        </div>
-        <div class="pull-right body">
-            <span class="tdy">{{ ref_date.strftime('%A, %B %d, %Y') }}</span>
-            <br/>
-            <span class="wk">
-                {{ weekdate_bounds[0].strftime('%b %d, %Y') }} - 
-                {{ weekdate_bounds[1].strftime('%b %d, %Y') }}
-            </span>
-        </div>
-    </div>
+    % include('calendar.tpl')
 </div>
 
 <div class="row">
@@ -78,7 +66,7 @@
 
 <div class="row">
   <div class="col-md-10">
-    % include('activity-summary-table.tpl', records=activity_records)
+    % include('activity-summary-table.tpl', records=activity_records, stat=activity_stats)
   </div>
 </div>
 

@@ -3,6 +3,58 @@
         <b>Captures Made Today</b>
     </div>
     <div class="panel-body">
+        
+        <div class="row">
+            <div class="col-md-2">
+                <div class="stat-card stat-blue">
+                    <div class="fig">{{ stat.capture_count or 0 }}</div>
+                    <div class="txt">Capture(s)</div>                    
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="stat-card stat-green">
+                    <div class="fig">{{ stat.transformer_count or 0 }}</div>
+                    <div class="txt">Transformer(s)</div>                    
+                    <div class="tag">
+                        {{ (stat.capture_count or 0) // (stat.transformer_count or 1) }} 
+                        <span class="plain">/t</span>
+                    </div>                
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="stat-card stat-wood">
+                    <div class="fig">{{ stat.upriser_count or 0 }}</div>
+                    <div class="txt">Upriser(s)</div>
+                    <div class="tag">
+                        {{ (stat.capture_count or 0) // (stat.upriser_count or 1) }} 
+                        <span class="plain">/u</span>
+                    </div>                
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="stat-card stat-sblue">
+                    <div class="fig">{{ stat.device_count or 0 }} </div>
+                    <div class="txt">Device(s)</div>                    
+                    <div class="tag">
+                        {{ (stat.capture_count or 0) // (stat.device_count or 1) }} 
+                        <span class="plain">/d</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="stat-card stat-yellow">
+                    <div class="fig">0</div>
+                    <div class="txt">abc</div>                    
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="stat-card stat-pink">
+                    <div class="fig">0</div>
+                    <div class="txt">xyz</div>                    
+                </div>
+            </div>       
+        </div>                
+                    
         <table class="table panel-table table-figures">
             <thead>
                 <tr class="group-desc">

@@ -41,7 +41,7 @@ def series_purity_summary(records, ref_date=None):
     return result
 
 
-def captures_by_team_feeder_upriser(records, ref_date=None):
+def day_activity_breakdown(records, ref_date=None):
     df = pd.DataFrame(list(records))
     results = []
     
@@ -88,6 +88,29 @@ def captures_by_team_feeder_upriser(records, ref_date=None):
         results.append(_(result))
 
     return results
+
+
+def day_activity_stats(records, ref_date=None):
+    df = pd.DataFrame(list(records))
+    result = _()
+
+    # total captures
+    result.capture_count = df.index.size
+    
+    # number of transformers & uprisers
+    df['station'] = df['rseq'].apply(lambda x: x[:6].upper())
+    df['upriser'] = df['rseq'].apply(lambda x: x[:8].upper())
+    gdf = df.groupby('station')
+    result.transformer_count = gdf['station'].count().index.size
+
+    gdf = df.groupby('upriser')
+    result.upriser_count = gdf['upriser'].count().index.size
+
+    # number of devices used
+    gdf = df.groupby('device_imei')
+    result.device_count = gdf['device_imei'].count().index.size
+
+    return result
 
 
 def summary_by_day(records):

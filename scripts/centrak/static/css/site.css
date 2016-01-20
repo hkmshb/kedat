@@ -136,3 +136,35 @@ input[type="checkbox"].input-validation-error {
 .calendar .wk {
     font-size: 12px;        
 }
+
+.stat-card {
+    color: #fff;
+    background-color: #ddd;
+    text-align: center;
+    margin: 5px 0 20px 0;
+    padding: 15px 10px 10px;
+    line-height: 18px;
+    font-weight: bold;
+    border-radius: 4px;
+}
+
+.stat-card .fig { font-size: 25px; font-weight: bold; }
+.stat-card .txt { font-size: 11px;  }
+.stat-card .plain { font-weight: normal; font-size: 10px; }
+.stat-card .tag {
+    float: right;
+    padding: 2px;
+    margin-top: -48px;
+    margin-right: -7px;
+    border-radius: 4px;
+    background-color: indianred;
+    font-weight: bold;
+    font-size: 85%;
+}
+
+.stat-blue { background-color: lightsteelblue; }
+.stat-green { background-color: darkseagreen; }
+.stat-wood { background-color: burlywood; }
+.stat-pink { background-color: lightcoral; }
+.stat-yellow { background-color: khaki; }
+.stat-sblue { background-color: skyblue; }

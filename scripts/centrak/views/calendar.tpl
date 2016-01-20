@@ -3,7 +3,7 @@
         <i class="glyphicon glyphicon-calendar"></i>
     </div>
     <div class="pull-right body">
-        <span class="tdy">{{ ref_date.strftime('%A, %B %d, %Y') }}</span>
+        <span class="tdy">{{ ref_date.strftime('%a, %B %d, %Y') }}</span>
         <br/>
         <span class="wk">
             {{ weekdate_bounds[0].strftime('%b %d, %Y') }} - 

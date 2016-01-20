@@ -59,11 +59,12 @@ def index():
 
     #+==========================
     #: today activity summary
-    activity_summary = []
-    captures = db.Capture.get_by_date(ref_date.isoformat(), paginate=False)
-    if captures.count():
-        all = stats.captures_by_team_feeder_upriser(captures, ref_date)
-        for record in all:
+    activity_summary, activity_stats = [], _()
+    captures = list(db.Capture.get_by_date(ref_date.isoformat(), paginate=False))
+    if captures:
+        activity_stats = stats.day_activity_stats(captures, ref_date)
+        activity_breakdown = stats.day_activity_breakdown(captures, ref_date)
+        for record in activity_breakdown:
             activity_summary.append(_(record))
 
     return {
@@ -71,6 +72,7 @@ def index():
         'title': 'Capture Summary',
         'records': records,
         'activity_records': activity_summary,
+        'activity_stats': activity_stats,
     }
 
 
