@@ -1,16 +1,17 @@
-"""
+﻿"""
 Ad-hoc csv report generation script.
 """
 import os, sys
-import pandas as pd
+import argparse
 from datetime import datetime
 
+import pandas as pd
 import db
+
 
 BASE_DIR = os.path.dirname(__file__)
 REPORT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', '..', '..', '_reports'))
 
-ref_date = datetime.now().date().isoformat()
 rpt_cols = ['rseq', 'enum_id', 'cust_name', 'addy_house_no', 'addy_street',
             'acct_status', 'acct_no', 'current']
 
@@ -53,49 +54,67 @@ def get_invalid_stations(df, codes):
     for col in ([key] + rpt_cols):
         records[col] = records[col].apply(lambda x: str(x).upper())
     return records
-    
+   
 
-def run(argv, target_dir, date_digits):
-    captures = db.Capture.get_by_date(ref_date, False)
+def run(args, target_dir, date_digits):
+    captures = db.Capture.get_by_date(args.ref_date, False)
     df = pd.DataFrame(list(captures))
 
-    if '--duplicate-rseq' in argv or '--all' in argv:
+    filename = os.path.join(target_dir, ('error-rpt-%s.xls' % date_digits))
+    writer = pd.ExcelWriter(filename)
+
+    print('Generating Reports for: %s' % args.ref_date)
+    if args.dup_rseq or args.all:
         print('compiling duplicate rseq records...')
         try:
             result = get_duplicate_rseqs(df)
-            filename = 'duplicate-rseq-%s.csv' % date_digits
-            result.to_csv(os.path.join(target_dir, filename))
+            sheet_name = 'duplicate-rseq'
+            result.to_excel(writer, sheet_name=sheet_name)
             print('sucess: records written\r\n')
         except Exception as ex:
             print('fail: %s\r\n' % str(ex))
 
-    if '--duplicate-accts' in argv or '--all' in argv:
+    if args.dup_acct or args.all:
         print('compiling duplicate acct records...')
         try:
             result = get_duplicate_accts(df)
-            filename = 'duplicate-acct-%s.csv' % date_digits
-            result.to_csv(os.path.join(target_dir, filename))
+            sheet_name = 'duplicate-acct'
+            result.to_excel(writer, sheet_name=sheet_name)
             print('success: records written\r\n')
         except Exception as ex:
             print('failed: %s\r\n' % str(ex))
     
-    if '--invalid-stations' in argv or '--all' in argv:
+    if args.invalid_station or args.all:
         print('compiling invalid station records...')
-        try:
-            result = get_invalid_stations(df, argv[1:])
-            filename = 'invalid-stations-%s.csv' % date_digits
-            result.to_csv(os.path.join(target_dir, filename))
+        try:                                                                    
+            result = get_invalid_stations(df, args.invalid_station)
+            sheet_name = 'invalid-stations'
+            result.to_excel(writer, sheet_name=sheet_name)
             print('success: records written\r\n')
         except Exception as ex:
             print('failed: %s\r\n' % str(ex))
+    
+    # flush all writes to disk
+    writer.save()
 
 
 
 if __name__ == '__main__':
-    date_digits = ref_date.replace('-','')
-    TARGET_DIR = os.path.join(REPORT_DIR, date_digits)
+    # define parser
+    parser = argparse.ArgumentParser(description="Report Generation Script")
+    add = parser.add_argument
+    add('-d', '--ref-date', nargs='?', default=datetime.now().date().isoformat(),
+        help="Date for which to produce report")
+    add('--dup-rseq', action='store_true',
+        help="Product duplicate route-sequence report")
+    add('--dup-acct', action='store_true', help="Produce duplicate accounts report")
+    add('--invalid-station', nargs='*', help="Product invalid station report")
+    add('-a', '--all', action='store_true', help="Product all forms of report")
 
-    if not os.path.exists(TARGET_DIR):
-        os.makedirs(TARGET_DIR)
+    args = parser.parse_args()
+    date_digits = args.ref_date.replace('-','')
+
+    if not os.path.exists(REPORT_DIR):
+        os.makedirs(REPORT_DIR)
             
-    run(sys.argv[1:], TARGET_DIR, date_digits)
+    run(args, REPORT_DIR, date_digits)
