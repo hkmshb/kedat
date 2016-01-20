@@ -48,4 +48,11 @@ class Capture:
         cur = db.captures.find({'_xform_id_string': form_id})
         return paginate(cur) if paginate else cur
 
+    @staticmethod
+    def get_by_date(ref_date, paginate=True):
+        cur = db.captures.find({'datetime_today': ref_date})
+        return paginate(cur) if paginate else cur
 
+    @staticmethod
+    def save_many(records):
+        db.captures.insert_many(records)

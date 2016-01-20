@@ -3,7 +3,7 @@
 <div class="jumbotron">
     <h1>Project: Eagle Eye</h1>
     <p>
-        <a class="btn btn-primary" href="/activities">Sync Captures</a>
+        <a class="btn btn-primary" href="#">Sync Captures</a>
     </p>
     <div class="pull-right calendar">
         <div class="pull-left">
@@ -51,21 +51,21 @@
                     % if records:
                         % for r in records:
                         <tr><td><a href="/xforms/{{r.id_string}}/">{{ r.title }}</a></td>
-                            <td class="lvsep">{{ r.d_total }}</td>
-                            <td>{{ r.d_rseq_duplicates }}</td>
-                            <td>{{ r.d_acctno_duplicates }}</td>
+                            <td class="lvsep">{{ r.d_total or '-' }}</td>
+                            <td>{{ r.d_rseq_duplicates or '-' }}</td>
+                            <td>{{ r.d_acctno_duplicates or '-' }}</td>
 
-                            <td class="lvsep col-shade">{{ r.w_total }}</td>
-                            <td class="col-shade">{{ r.w_rseq_duplicates }}</td>
-                            <td class="col-shade">{{ r.w_acctno_duplicates }}</td>
+                            <td class="lvsep col-shade">{{ r.w_total or '-' }}</td>
+                            <td class="col-shade">{{ r.w_rseq_duplicates or '-' }}</td>
+                            <td class="col-shade">{{ r.w_acctno_duplicates or '-' }}</td>
                             
-                            <td class="lvsep">{{ r.m_total }}</td>
-                            <td>{{ r.m_rseq_duplicates }}</td>
-                            <td>{{ r.m_acctno_duplicates }}</td>
+                            <td class="lvsep">{{ r.m_total or '-' }}</td>
+                            <td>{{ r.m_rseq_duplicates or '-' }}</td>
+                            <td>{{ r.m_acctno_duplicates or '-' }}</td>
                             
-                            <td class="lvsep col-shade">{{ r._total }}</td>
-                            <td class="col-shade">{{ r._rseq_duplicates }}</td>
-                            <td class="col-shade">{{ r._acctno_duplicates }}</td></tr>
+                            <td class="lvsep col-shade">{{ r._total or '-' }}</td>
+                            <td class="col-shade">{{ r._rseq_duplicates or '-' }}</td>
+                            <td class="col-shade">{{ r._acctno_duplicates or '-' }}</td></tr>
                         % end
                     % else:
                         <tr><td colspan="13">No data available. Perform <b><i>Sync Captures</i></b> to get Captures from server!</td></tr>
@@ -75,8 +75,11 @@
             </div>
         </div>
       </form>                                      
-
-
     </div>
+</div>
 
+<div class="row">
+  <div class="col-md-10">
+    % include('activity-summary-table.tpl', records=activity_records)
+  </div>
 </div>

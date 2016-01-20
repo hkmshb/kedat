@@ -78,17 +78,45 @@ input[type="checkbox"].input-validation-error {
     border-left: solid 1px #ddd;
 }
 
-.col-shade {
-    background-color: #eee;
+.table-figures th {
+    text-align: center;
 }
 
-.calendar {
+.table-figures td:first-child {
+    text-align: left;
+}
+
+.table-figures td {
+    text-align: right;
+}
+
+.table-figures td.text {
+    color: darkcyan;
+    text-align: left;
+}
+
+.col-shade {
+    background-color: #fafafa;
+}
+
+.agg-total td {
+    color: darkcyan;
+    font-weight: bold;
+}
+
+
+.front .calendar,
+.not-front .calendar {
     color: #fff;
     padding: 7px;
     margin-top: -100px;
     background-color: rebeccapurple;
     border-radius: 5px;
     line-height: 18px;
+}
+
+.not-front .calendar {
+    margin-top: 0;
 }
 
 .calendar i {

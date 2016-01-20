@@ -1,8 +1,9 @@
-import pandas as pd
+﻿import pandas as pd
 from datetime import datetime
 
 import db
 import utils
+from collections import OrderedDict
 from kedat.core import Storage as _
 
 
@@ -27,7 +28,6 @@ def series_purity_summary(records, ref_date=None):
     dates = utils.get_weekdate_bounds(ref_date)
     f = df[df[key] >= dates[0].isoformat()]
     f = f[f[key] <= dates[1].isoformat()]
-    print(f)
     result.update(_purity_summary(f, 'w'))
 
     # month
@@ -39,6 +39,82 @@ def series_purity_summary(records, ref_date=None):
     # all
     result.update(_purity_summary(df, ''))
     return result
+
+
+def captures_by_team_feeder_upriser(records, ref_date=None):
+    df = pd.DataFrame(list(records))
+    results = []
+    
+    # update dataframe content
+    df['group'] = df['enum_id'].apply(lambda r: (r.split('/')[0]).upper())
+    df['upriser'] = df['rseq'].apply(lambda r: (r[:8]).upper())
+    for k in ('last_updated', 'is_junk'):
+        if k not in df.columns:
+            df[k] = None
+
+    # group records by group-name
+    ggroups = df.groupby('group')
+    gs = ggroups['rseq'].count()
+
+    for i in range(len(gs)):
+        result = _(group=gs.index[i])
+
+        # summaries
+        gdf = ggroups.get_group(gs.index[i])
+        result.update(_purity_summary(gdf, ''))
+        result.update(_acct_status_summary(gdf))
+        result.update(_meter_type_summary(gdf))
+
+        #+===========================================:
+        #: group by upriser
+        ugroups = gdf.groupby('upriser')
+        us = ugroups['rseq'].count()
+        iresults = []
+        result.uprisers = iresults
+
+        for j in range(len(us)):
+            iresult = _(upriser=us.index[j])
+            
+            # summaries
+            udf = ugroups.get_group(us.index[j])
+            iresult.update(_purity_summary(udf, ''))
+            iresult.update(_acct_status_summary(udf))
+            iresult.update(_meter_type_summary(udf))
+
+            # collect results
+            iresults.append(_(iresult))
+
+        # collect result
+        results.append(_(result))
+
+    return results
+
+
+def summary_by_day(records):
+    df = pd.DataFrame(list(records))
+    results, key = [], 'datetime_today'
+    
+    for k in ('last_updated', 'is_junk'):
+        if k not in df.columns:
+            df[k] = None
+    
+    # group records by date
+    groups = df.groupby(key)
+    gs = groups['rseq'].count()
+
+    for i in range(len(gs)):
+        result = _(date=gs.index[i])
+        
+        # purity check
+        gdf = groups.get_group(gs.index[i])
+        result.update(_purity_summary(gdf, ''))
+        result.update(_acct_status_summary(gdf))
+        result.update(_meter_type_summary(gdf))
+        
+        # collect results
+        results.append(_(result))
+
+    return results
 
 
 def _purity_summary(df, prefix):
@@ -65,5 +141,26 @@ def _purity_summary(df, prefix):
     key = 'is_junk'
     f = df[df[key].isnull() == False]
     result['%s_junk' % prefix] = f[key].size
+    return result
+
+
+def _acct_status_summary(df):
+    result, key = _(), 'acct_status'
+    values = ['unknown', 'new', 'active', 'inactive', 'not-conn',
+              'disconn-bill', 'disconn-no-bill', 'n_a']
+    
+    for value in values:
+        f = df[df[key] == value]
+        result[value.replace('-','_')] = f[key].size
+    return result
+
+
+def _meter_type_summary(df):
+    result, key = _(), 'meter_type'
+    values = ['none', 'analogue', 'ppm']
+    
+    for value in values:
+        f = df[df[key] == value]
+        result[value] = f[key].size
     return result
 

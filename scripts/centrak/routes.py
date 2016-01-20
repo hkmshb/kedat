@@ -14,41 +14,63 @@ from services import api, stats
 
 
 
-
 def view(tmpl_name):
+    ref_date = _get_ref_date()
+    wkdate_bounds = get_weekdate_bounds(ref_date)
+
     context = {
         'year': datetime.now().year,
         'get_session': get_session,
         'request': request,
+        
+        # calendar entries
+        'ref_date': ref_date,
+        'weekdate_bounds': wkdate_bounds,
     }
     return fn_view(tmpl_name, **context)
+
+
+def _get_ref_date():
+    try:
+        ref_date = request.query.get('refdate', None)
+        ref_date = (datetime.strptime(ref_date, '%Y%m%d').date()
+                    if ref_date else datetime.today().date())
+    except:
+        ref_date = datetime.today().date()
+    return ref_date
 
 
 @route('/')
 @view('index')
 def index():
+    #+==========================
+    #: forms series summary
     records = []
     forms = db.XForm.get_all()
-    try:
-        ref_date = request.query.get('ref_date', None)
-        ref_date = (datetime.strptime(ref_date, '%Y-%m-%d').date()
-                    if ref_date else datetime.today().date())
-    except:
-        ref_date = datetime.today().date()
+    ref_date = _get_ref_date()
 
     for f in forms:
         record = _(id_string=f.id_string, title=f.title)
         captures = db.Capture.get_by_form(f.id_string, paginate=False)
-        summary = stats.series_purity_summary(captures, ref_date)
-        record.update(summary)
+        if captures.count():
+            summary = stats.series_purity_summary(captures, ref_date)
+            record.update(summary)
         records.append(record)
+
+    #+==========================
+    #: today activity summary
+    activity_summary = []
+    captures = db.Capture.get_by_date(ref_date.isoformat(), paginate=False)
+    if captures.count():
+        all = stats.captures_by_team_feeder_upriser(captures, ref_date)
+        for record in all:
+            activity_summary.append(_(record))
 
     return {
         'is_front': True, 
         'title': 'Capture Summary',
-        'ref_date': ref_date,
-        'weekdate_bounds': get_weekdate_bounds(ref_date),
         'records': records,
+        'activity_records': activity_summary,
     }
 
 
@@ -57,7 +79,6 @@ def index():
 def xforms():
     forms = db.XForm.get_all(include_inactive=True)
     return {
-        'year': datetime.now().year,
         'title': 'XForms',
         'records': forms
     }      
@@ -127,9 +148,15 @@ def xforms_sync():
         return redirect('/xforms/')
 
 
+@route('/xforms/<form_id>/')
+@view('xform-capture-summary')
+def xform_info(form_id):
+    captures = db.Capture.get_by_form(form_id, paginate=False)
+    summaries = stats.summary_by_day(captures)
 
+    return {
+        'title': 'Daily Summary',
+        'records': summaries,
+    }
 
-    
-
-
-
+   
