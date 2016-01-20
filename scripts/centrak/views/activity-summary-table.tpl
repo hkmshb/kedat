@@ -1,4 +1,4 @@
-<div class="panel panel-default">
+<div class="panel panel-default activity-summary">
     <div class="panel-heading">
         <b>Captures Made Today</b>
     </div>
@@ -31,7 +31,7 @@
             % if records:
                 % for r in records:
                 <tr class="agg-total">
-                    <td>{{ r.group }}</td>
+                    <td><a href="#" data-target="{{ r.group }}">{{ r.group }}</a></td>
                     <td class="lvsep text">-</td>
                     <td class="lvsep">{{ r._total }}</td>
 
@@ -50,7 +50,7 @@
                     % if r.uprisers:
  
                         % for u in r.uprisers:
-                    <tr class="hide" data-group="{{ r.group }}">
+                    <tr style="display:none;" data-group="{{ r.group }}">
                         <td>&nbsp;</td>
                         <td class="text">{{ u.upriser }}</td>
                         <td class="lvsep">{{ u._total }}</td>

@@ -1,5 +1,3 @@
-% rebase('layout.tpl', title=title, year=year)
-
 <div class="jumbotron">
     <h1>Project: Eagle Eye</h1>
     <p>
@@ -83,3 +81,14 @@
     % include('activity-summary-table.tpl', records=activity_records)
   </div>
 </div>
+
+% def scripts():
+<script>
+    (function($) {
+        $(function(){
+           index_page(); 
+        });
+    })(jQuery);
+</script>
+% end
+% rebase('layout.tpl', title=title, year=year, extra_scripts=scripts)
