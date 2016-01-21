@@ -1,6 +1,6 @@
 <div class="panel panel-default activity-summary">
     <div class="panel-heading">
-        <b>Captures Made Today</b>
+        <b>Captures For: </b><b class="text-success">{{ report_ref_date.strftime('%a, %b %d, %Y') }}</b>
     </div>
     <div class="panel-body">
         

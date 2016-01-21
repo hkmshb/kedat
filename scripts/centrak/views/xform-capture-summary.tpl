@@ -1,10 +1,9 @@
- % rebase('layout.tpl', title=title, year=year)
-
  <div class="row">
     <div class="col-md-9">
+      <form method="post">
         <div class="panel panel-default">
             <div class="panel-heading">
-                {{ title }}
+                {{ title }} / <b>{{ xform.title }}</b>
             </div>
             <div class="panel-body">
                 <table border="0" class="table panel-table table-figures">
@@ -56,10 +55,67 @@
                 </table>
             </div>
         </div>
-
+      </form>
     </div>
 
     <div class="col-md-3">
         % include('calendar.tpl')
+        
+        <div class="clearfix">&nbsp;</div>
+        <div style="padding-top:10px;">
+            <div class="panel panel-info">
+                <div class="panel-heading">Sync History</div>
+                <div class="panel-body">
+                    <form method="post" class="form-inline">
+                        <div class="form-group">
+                            <div class="input-group date">
+                                <input type="text" class="form-control" 
+                                       placeholder="dd/mm/yyyy" required disabled>
+                                    <span class="input-group-addon"><i class="glyphicon glyphicon-th"></i></span>
+                                </input>
+                            </div>
+                        </div>
+                        <input type="hidden" name="sync_date" value="" />
+                        <input type="hidden" name="id_string" value="{{ xform.id_string }}" />
+                        <button type="submit" class="btn btn-primary">Sync</button>
+                    </form>
+                    <hr style="margin-bottom:10px;"/>
+
+                    <table class="table table-condensed panel-table">
+                        <tbody>
+                        % if not sync_records:
+                            <tr><td><span class="text-info" title="Date Performed">2016-01-11</span> / 
+                                    <span title="Date Entered">2016-01-11</span>
+                                </td>
+                                <td title="Quantity Synced">300</td></tr>
+                        % else:
+                            <tr><td>No data available.</td></tr>
+                        % end
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
     </div>
- </div>
+ </div> 
+
+ % def script():
+    <script type="text/javascript">
+        (function($){
+            $(function(){
+                $('.input-group.date').datepicker({
+                        format: "dd/mm/yyyy", clearBtn: true,
+                        autoclose: true, toggleActive: true,
+                        todayHighlight: true,
+                    }).on('clearDate', function(e) {
+                        $('[name=sync_date]').val('');
+                    }).on('changeDate', function(e) {
+                        $('[name=sync_date]').val(e.format('yyyy-mm-dd'));
+                    });
+            });
+        })(jQuery);
+    </script>
+ % end
+
+ % rebase('layout.tpl', title=title, year=year, extra_scripts=script)

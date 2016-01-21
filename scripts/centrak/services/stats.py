@@ -116,6 +116,8 @@ def day_activity_stats(records, ref_date=None):
 def summary_by_day(records):
     df = pd.DataFrame(list(records))
     results, key = [], 'datetime_today'
+    if not df.index.size:
+        return results
     
     for k in ('last_updated', 'is_junk'):
         if k not in df.columns:

@@ -10,7 +10,7 @@
                     <button type="submit" name="save" class="btn btn-success"
                             style="margin-top:-5px;">Save</button>
                     <button type="submit" name="sync" class="btn btn-primary" 
-                            style="margin-top:-5px;">Sync</button>
+                            style="margin-top:-5px;">Get XForms (Sync)</button>
                 </div>
             </div>
             <div class="panel-body">
@@ -19,7 +19,7 @@
                     % active_ids, all_ids = [], []
                     % if records:
                         % for r in records:
-                        <tr><td>{{ r.title }}</td>
+                        <tr><td><a href="/xforms/{{ r.id_string }}/">{{ r.title }}</a></td>
                             <td>{{ r.date_created }}</td>
                             <td><label for="activate-{{ r.id }}" class="table-label">
                                     <input type="checkbox" name="activate" value="{{ r.id_string }}"

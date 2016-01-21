@@ -5,8 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }} - CENTrak</title>
     <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-datepicker3.min.css" />
     <link rel="stylesheet" type="text/css" href="/static/css/site.css" />
     <script src="/static/js/modernizr-2.6.2.js"></script>
+    % if defined('extra_head'):
+        % extra_head()
+    % end
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -62,6 +66,7 @@
     
     <script src="/static/js/jquery-1.10.2.min.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/bootstrap-datepicker.min.js"></script>
     <script src="/static/js/centrak.js"></script>
     % if defined('extra_scripts'):
         % extra_scripts()

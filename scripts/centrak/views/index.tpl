@@ -1,9 +1,11 @@
 <div class="jumbotron">
-    <h1>Project: Eagle Eye</h1>
-    <p>
-        <a class="btn btn-primary" href="#">Sync Captures</a>
-    </p>
-    % include('calendar.tpl')
+    <h1 class="pull-left">Project: Eagle Eye</h1>
+    % include('calendar-input.tpl')
+    % if ref_date != report_ref_date:
+    <div style="margin-top: 65px">
+        % include('calendar.tpl', calendar_class="coral", ref_date=report_ref_date, weekdate_bounds=report_weekdate_bounds)
+    </div>
+    % end
 </div>
 
 <div class="row">
@@ -17,11 +19,12 @@
             <div class="panel-body">
                 <table class="table panel-table">
                     <thead>
-                        <tr><th>XForm</th>
+                        <tr>
+                            <th>XForm</th>
                             <th title="Today" class="lvsep">Today</th>
                             <th title="Today Duplicate RSeq">#DRS</th>
                             <th title="Today Duplicate A/C#">#DAC</th>
-                            
+
                             <th title="This Week"  class="lvsep col-shade">Week</th>
                             <th title="Week Duplicate RSeq" class="col-shade">#DRS</th>
                             <th title="Week Duplicate A/C#" class="col-shade">#DAC</th>
@@ -32,7 +35,9 @@
 
                             <th title="Total" class="lvsep col-shade">All</th>
                             <th title="All Duplicate RSeq" class="col-shade">#DRS</th>
-                            <th title="All Duplicate A/C#" class="col-shade">#DAC</th></tr>
+                            <th title="All Duplicate A/C#" class="col-shade">#DAC</th>
+                        </tr>
+                    </thead>
                     <tbody>
                     % if records:
                         % for r in records:
@@ -75,6 +80,19 @@
     (function($) {
         $(function(){
            index_page(); 
+           
+           $('.date-input').datepicker({
+                    format: "dd/mm/yyyy", clearBtn: true,
+                    autoclose: true, toggleActive: true,
+                    todayHighlight: true,           
+               }).on('changeDate', function(e) {
+                    var entry = e.format('yyyymmdd')
+                      , url = window.location.origin;
+                    
+                    if (entry !== "")
+                        url = url + '/?refdate=' + entry;
+                    window.open(url, target='_self');
+               });               
         });
     })(jQuery);
 </script>

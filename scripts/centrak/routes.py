@@ -48,6 +48,7 @@ def index():
     records = []
     forms = db.XForm.get_all()
     ref_date = _get_ref_date()
+    wkdate_bounds = get_weekdate_bounds(ref_date)
 
     for f in forms:
         record = _(id_string=f.id_string, title=f.title)
@@ -73,6 +74,8 @@ def index():
         'records': records,
         'activity_records': activity_summary,
         'activity_stats': activity_stats,
+        'report_ref_date': ref_date,
+        'report_weekdate_bounds': wkdate_bounds,
     }
 
 
@@ -153,12 +156,39 @@ def xforms_sync():
 @route('/xforms/<form_id>/')
 @view('xform-capture-summary')
 def xform_info(form_id):
+    xform = db.XForm.get_by_id(form_id)
     captures = db.Capture.get_by_form(form_id, paginate=False)
     summaries = stats.summary_by_day(captures)
 
     return {
         'title': 'Daily Summary',
+        'sync_records': [],
         'records': summaries,
+        'xform': xform
     }
 
-   
+@post('/xforms/<form_id>/')
+def xform_capture_sync(form_id):
+    from services import api2
+    from services import transform
+
+    sync_date = request.forms.get('sync_date')
+    id_string = request.forms.get('id_string')
+
+    dt = datetime.today().date().isoformat()
+    activity = {
+        'date_created': dt,
+        'sync_date': sync_date,
+        'sync_table': 'f130_cf05_KN',            
+        'record_count': 0,
+    }
+
+    transformed = []
+    for captures in api2.get_captures(activity):
+        if captures:
+            for capture in captures:
+                transformed.append(transform.to_flatten_dict(capture))
+            
+            db.Capture.save_many(transformed)
+        transformed=[]
+    return 'Done'

@@ -1,7 +1,9 @@
 % calendar_class = get('calendar_class', "")
 <div class="calendar pull-right {{ calendar_class }}">
     <div class="pull-left">
-        <i class="glyphicon glyphicon-calendar"></i>
+        <a href="#" class="date-input">
+            <i class="glyphicon glyphicon-calendar"></i>
+        </a>
     </div>
     <div class="pull-right body">
         <span class="tdy">{{ ref_date.strftime('%a, %B %d, %Y') }}</span>
