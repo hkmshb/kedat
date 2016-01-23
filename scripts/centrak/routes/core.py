@@ -5,12 +5,13 @@ from datetime import datetime, date
 from bottle import (
     post, route, request, response, redirect, template,
     view as fn_view)
+from requests.exceptions import ConnectionError
 from kedat.core import Storage as _
 
 import db                
 from utils import get_session, write_log, get_weekdate_bounds
+from services import api, stats, transform
 from settings import FMT_SHORTDATE
-from services import api, stats
 
 
 
@@ -160,6 +161,7 @@ def xform_info(form_id):
     captures = db.Capture.get_by_form(form_id, paginate=False)
     summaries = stats.summary_by_day(captures)
 
+
     return {
         'title': 'Daily Summary',
         'sync_records': [],
@@ -167,28 +169,44 @@ def xform_info(form_id):
         'xform': xform
     }
 
-@post('/xforms/<form_id>/')
-def xform_capture_sync(form_id):
-    from services import api2
-    from services import transform
 
-    sync_date = request.forms.get('sync_date')
-    id_string = request.forms.get('id_string')
+@post('/xforms/<id_string>/')
+def xform_capture_sync(id_string):
+    xform = db.XForm.get_by_id(id_string)
+    session = get_session()
 
-    dt = datetime.today().date().isoformat()
-    activity = {
-        'date_created': dt,
-        'sync_date': sync_date,
-        'sync_table': 'f130_cf05_KN',            
-        'record_count': 0,
-    }
+    if not xform:
+        session['messages']['warn'].append('XForm with specified id not found')
+    else:
+        date_captured = request.forms.get('date_captured')
+        #id_string = request.forms.get('id_string')
 
-    transformed = []
-    for captures in api2.get_captures(activity):
-        if captures:
-            for capture in captures:
-                transformed.append(transform.to_flatten_dict(capture))
-            
-            db.Capture.save_many(transformed)
-        transformed=[]
-    return 'Done'
+        # get item count
+        count = db.Capture.count_by_date_form(date_captured, id_string)
+        print('.. %s, %s, %s' % (date_captured, id_string, count))
+
+        # pull new captures
+        try:
+            transformed, pull_count = [], 0
+            for captures in api.get_captures(xform['id'], date_captured, start=count):
+                if captures:
+                    pull_count += len(captures)
+                    for c in captures:
+                        transformed.append(transform.to_flatten_dict(c))
+
+                    db.Capture.save_many(transformed)
+                    transformed = []
+
+            session['messages']['pass'].append('%s captures pulled.' % pull_count)
+        except ConnectionError:
+            session['messages']['fail'].append('Sync failed: connection error.')
+        except Exception as ex:
+            session['messages']['fail'].append('Sync failed: %s' % str(ex))
+    
+
+    return redirect('/xforms/%s/' % id_string)
+
+
+
+
+

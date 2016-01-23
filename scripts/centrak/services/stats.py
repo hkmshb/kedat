@@ -127,8 +127,12 @@ def summary_by_day(records):
     groups = df.groupby(key)
     gs = groups['rseq'].count()
 
+    def _verbose(x):
+        d = datetime.strptime(x, '%Y-%m-%d')
+        return d.strftime('%Y-%m-%d : %a')
+
     for i in range(len(gs)):
-        result = _(date=gs.index[i])
+        result = _(date=_verbose(gs.index[i]))
         
         # purity check
         gdf = groups.get_group(gs.index[i])

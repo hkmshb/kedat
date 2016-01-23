@@ -83,7 +83,7 @@
             % if records:
                 % for r in records:
                 <tr class="agg-total">
-                    <td><a href="#" data-target="{{ r.group }}">{{ r.group }}</a></td>
+                    <td><a name="group-{{r.group.lower()}}" href="#group-{{r.group.lower()}}" data-target="{{ r.group }}">{{ r.group }}</a></td>
                     <td class="lvsep text">-</td>
                     <td class="lvsep">{{ r._total }}</td>
 

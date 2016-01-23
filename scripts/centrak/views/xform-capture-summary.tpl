@@ -4,6 +4,22 @@
         <div class="panel panel-default">
             <div class="panel-heading">
                 {{ title }} / <b>{{ xform.title }}</b>
+
+                <div class="pull-right" style="margin-top: -5px;">
+                    <form method="post">
+                        <div class="input-group date pull-left" style="width: 150px;">
+                            <input type="text" class="form-control"
+                                    placeholder="dd/mm/yyyy" required="" disabled="">
+                                <span class="input-group-addon btn" style="border-radius: 0 4px 4px 0;">
+                                    <i class="glyphicon glyphicon-th"></i>
+                                </span>
+                            </input>
+                        </div> &nbsp;
+                        <button type="submit" name="sync" class="btn btn-primary" xstyle="display:inline-block;">Sync</button>
+                        <input type="hidden" name="date_captured" value="" />
+                        <input type="hidden" name="id_string" value="{{ xform.id_string }}" />
+                    </form>
+                </div>                
             </div>
             <div class="panel-body">
                 <table border="0" class="table panel-table table-figures">
@@ -31,7 +47,7 @@
                     </thead>
                     <tbody>
                     % if records:
-                        % for r in records:
+                        % for r in records:                      
                         <tr><td>{{ r.date }}</td>
                             <td class="lvsep">{{ r._total }}</td>
 
@@ -64,35 +80,9 @@
         <div class="clearfix">&nbsp;</div>
         <div style="padding-top:10px;">
             <div class="panel panel-info">
-                <div class="panel-heading">Sync History</div>
+                <div class="panel-heading">...</div>
                 <div class="panel-body">
-                    <form method="post" class="form-inline">
-                        <div class="form-group">
-                            <div class="input-group date">
-                                <input type="text" class="form-control" 
-                                       placeholder="dd/mm/yyyy" required disabled>
-                                    <span class="input-group-addon"><i class="glyphicon glyphicon-th"></i></span>
-                                </input>
-                            </div>
-                        </div>
-                        <input type="hidden" name="sync_date" value="" />
-                        <input type="hidden" name="id_string" value="{{ xform.id_string }}" />
-                        <button type="submit" class="btn btn-primary">Sync</button>
-                    </form>
-                    <hr style="margin-bottom:10px;"/>
-
-                    <table class="table table-condensed panel-table">
-                        <tbody>
-                        % if not sync_records:
-                            <tr><td><span class="text-info" title="Date Performed">2016-01-11</span> / 
-                                    <span title="Date Entered">2016-01-11</span>
-                                </td>
-                                <td title="Quantity Synced">300</td></tr>
-                        % else:
-                            <tr><td>No data available.</td></tr>
-                        % end
-                        </tbody>
-                    </table>
+                    ...
                 </div>
             </div>
 
@@ -109,9 +99,9 @@
                         autoclose: true, toggleActive: true,
                         todayHighlight: true,
                     }).on('clearDate', function(e) {
-                        $('[name=sync_date]').val('');
+                        $('[name=date_captured]').val('');
                     }).on('changeDate', function(e) {
-                        $('[name=sync_date]').val(e.format('yyyy-mm-dd'));
+                        $('[name=date_captured]').val(e.format('yyyy-mm-dd'));
                     });
             });
         })(jQuery);
