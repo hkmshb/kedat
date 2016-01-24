@@ -61,7 +61,9 @@ class Capture:
 
     @staticmethod
     def get_by_date(ref_date, paginate=True):
-        cur = db.captures.find({'datetime_today': ref_date})
+        cur = db.captures\
+                .find({'datetime_today': ref_date})\
+                .sort('rseq', pymongo.ASCENDING)
         return utils.paginate(cur) if paginate else cur
 
     @staticmethod
@@ -73,7 +75,10 @@ class Capture:
 
     @staticmethod
     def get_by_form(ref_id, paginate=True):
-        cur = db.captures.find({'_xform_id_string': ref_id})
+        cur = db.captures\
+                .find({'_xform_id_string': ref_id})\
+                .sort((['datetime_today', pymongo.ASCENDING],
+                       ['rseq', pymongo.ASCENDING]))
         return utils.paginate(cur) if paginate else cur
 
     @staticmethod

@@ -15,7 +15,7 @@
                                 </span>
                             </input>
                         </div> &nbsp;
-                        <button type="submit" name="sync" class="btn btn-primary" xstyle="display:inline-block;">Sync</button>
+                        <button type="submit" name="sync" class="btn btn-primary">Sync</button>
                         <input type="hidden" name="date_captured" value="" />
                         <input type="hidden" name="id_string" value="{{ xform.id_string }}" />
                     </form>

@@ -29,3 +29,17 @@ PAGE_SIZE = 20
 # formats
 FMT_SHORTDATE = '%Y-%m-%d'
 
+# reportings
+report_cols = [
+    # gen
+    'datetime_today', 'rseq', 'enum_id', 
+    # cust-info
+    'cust_name', 'cust_mobile1', 'addy_house_no', 'addy_street', 
+    # acct-info
+    'acct_status', 'acct_no', 'current',
+    # meter-status
+    'meter_status', 'meter_no', 'meter_type',
+    # others
+    'plot_type', 'occupant', 'remarks',
+]
+

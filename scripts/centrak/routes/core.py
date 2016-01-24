@@ -10,7 +10,7 @@ from kedat.core import Storage as _
 
 import db                
 from utils import get_session, write_log, get_weekdate_bounds
-from services import api, stats, transform
+from services import api, stats, transform, report
 from settings import FMT_SHORTDATE
 
 
@@ -207,6 +207,14 @@ def xform_capture_sync(id_string):
     return redirect('/xforms/%s/' % id_string)
 
 
+@post('/r/default/')
+def report_default():
+    ref_date = request.forms.get('ref_date')
+    form_id = request.forms.get('form_id')
 
+    report.write_report(form_id, ref_date)
+    session = get_session()
+    session['messages']['pass'].append('Report generated.')
+    return redirect('/')
 
 

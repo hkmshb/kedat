@@ -43,6 +43,52 @@ def series_purity_summary(records, ref_date=None):
 
 def day_activity_breakdown(records, ref_date=None):
     df = pd.DataFrame(list(records))
+    return _activity_breakdown(df)
+
+
+def day_activity_stats(records, ref_date=None):
+    df = pd.DataFrame(list(records))
+    return _activity_stats(df)
+
+
+def summary_by_day(records):
+    df = pd.DataFrame(list(records))
+    return _activity_by_day(df)
+
+
+def _activity_by_day(df):
+    results, key = [], 'datetime_today'
+    if not df.index.size:
+        return results
+    
+    for k in ('last_updated', 'is_junk'):
+        if k not in df.columns:
+            df[k] = None
+    
+    # group records by date
+    groups = df.groupby(key)
+    gs = groups['rseq'].count()
+
+    def _verbose(x):
+        d = datetime.strptime(x, '%Y-%m-%d')
+        return d.strftime('%Y-%m-%d : %a')
+
+    for i in range(len(gs)):
+        result = _(date=_verbose(gs.index[i]))
+        
+        # purity check
+        gdf = groups.get_group(gs.index[i])
+        result.update(_purity_summary(gdf, ''))
+        result.update(_acct_status_summary(gdf))
+        result.update(_meter_type_summary(gdf))
+        
+        # collect results
+        results.append(_(result))
+
+    return results
+
+
+def _activity_breakdown(df):
     results = []
     
     # update dataframe content
@@ -86,12 +132,10 @@ def day_activity_breakdown(records, ref_date=None):
 
         # collect result
         results.append(_(result))
-
     return results
 
 
-def day_activity_stats(records, ref_date=None):
-    df = pd.DataFrame(list(records))
+def _activity_stats(df):
     result = _()
 
     # total captures
@@ -111,39 +155,6 @@ def day_activity_stats(records, ref_date=None):
     result.device_count = gdf['device_imei'].count().index.size
 
     return result
-
-
-def summary_by_day(records):
-    df = pd.DataFrame(list(records))
-    results, key = [], 'datetime_today'
-    if not df.index.size:
-        return results
-    
-    for k in ('last_updated', 'is_junk'):
-        if k not in df.columns:
-            df[k] = None
-    
-    # group records by date
-    groups = df.groupby(key)
-    gs = groups['rseq'].count()
-
-    def _verbose(x):
-        d = datetime.strptime(x, '%Y-%m-%d')
-        return d.strftime('%Y-%m-%d : %a')
-
-    for i in range(len(gs)):
-        result = _(date=_verbose(gs.index[i]))
-        
-        # purity check
-        gdf = groups.get_group(gs.index[i])
-        result.update(_purity_summary(gdf, ''))
-        result.update(_acct_status_summary(gdf))
-        result.update(_meter_type_summary(gdf))
-        
-        # collect results
-        results.append(_(result))
-
-    return results
 
 
 def _purity_summary(df, prefix):

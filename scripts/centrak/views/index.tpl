@@ -73,6 +73,28 @@
   <div class="col-md-10">
     % include('activity-summary-table.tpl', records=activity_records, stat=activity_stats)
   </div>
+    <div class="col-md-2">
+        <div class="panel panel-info">
+            <div class="panel-heading">Report</div>
+            <div class="panel-body">
+                <form method="post" class="form-inline report-form" action="/r/default/">
+                    <div class="form-group">
+                        <div class="input-group date pull-left" style="width: 120px;">
+                            <input type="text" class="form-control" placeholder="dd/mm/yyyy"
+                                   required="" disabled="" value="{{report_ref_date.strftime('%d/%m/%Y')}}">
+                                <span class="input-group-addon btn" style="border-radius: 0 4px 4px 0;">
+                                    <i class="glyphicon glyphicon-th"></i>
+                                </span>
+                            </input>
+                        </div>
+                    </div>
+                    <input type="hidden" name="ref_date" value="{{ report_ref_date.strftime('%Y-%m-%d')}}" />
+                    <input type="hidden" name="form_id" value="f130_cf05_KN" />
+                    <button type="submit" class="btn btn-primary" style="margin-top:3px;">Generate Report</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 % def scripts():
@@ -92,7 +114,16 @@
                     if (entry !== "")
                         url = url + '/?refdate=' + entry;
                     window.open(url, target='_self');
-               });               
+               });
+               
+           $('.input-group.date').datepicker({
+                format: "dd/mm/yyyy", clearBtn: true,
+                autoclose: true, toggleActive: true,
+                todayHighlight: true,
+           }).on('changeDate', function(e) {
+                var entry = e.format('yyyy-mm-dd');
+                $('.report-form [name=ref_date]').val(entry);
+           });
         });
     })(jQuery);
 </script>
