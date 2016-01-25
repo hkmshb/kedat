@@ -12,11 +12,9 @@ RULES = {
         ],
         'name_map': {
             'house_no': 'no',
-            'tariff': 'current',
             'multi_source': 'multi',
             'occupant_status': 'occupant',
-
-            # fullname map
+            'neighbour_rseqid': 'neighbour_rseq',
             'cust_gps_coord': 'gps',
             'rseqId': 'rseq',
         },
@@ -89,11 +87,12 @@ def to_flatten_dict(entry):
             continue
 
         if '/'  in k:
-            # flatten key
+            # exclude entries
             key, ikey = k.split('/')
             if ikey in rules_excl:
                 continue
 
+            # re-map names
             if ikey in rules_nmap:
                 ikey = rules_nmap[ikey]
             
@@ -103,6 +102,12 @@ def to_flatten_dict(entry):
 
     # other transforms
     #----------------------------------------------------------
-    target['gps'] = [float(v) for v in target['gps'].split(' ')]    
+    target['gps'] = [float(v) for v in target['gps'].split(' ')]
+    
+    # set xform_id
+    parts = target['_xform_id_string'].split('_')
+    xform_id = '%s_%s_%s' % (parts[0], parts[1][:2],  parts[2])
+    target['xform_id'] = xform_id
+
     return target
 
