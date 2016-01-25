@@ -13,7 +13,8 @@ import settings
 from routes import *
 
 
-if '--debug' in sys.argv[1:] or 'SERVER_DEBUG' in os.environ:
+argv = sys.argv[1:]
+if '--debug' in argv or 'SERVER_DEBUG' in os.environ:
     # Debug mode will enable more verbose output in the console window.
     # It must be set at the beginning of the script.
     bottle.debug(True)
@@ -46,7 +47,11 @@ if __name__ == '__main__':
         return bottle.static_file(filepath, root=STATIC_ROOT)
 
     # Starts a local test server.
-    bottle.run(
-        app=wsgi_app(), reloader=True,
-        server='wsgiref', host=HOST, port=PORT
-    )
+    run_args = {
+        'app': wsgi_app(), 'server': 'wsgiref',
+        'host': HOST, 'port': PORT }
+
+    if '--debug' in argv or 'SERVER_DEBUG' in os.environ:
+        run_args['reloader'] = True
+
+    bottle.run(**run_args)

@@ -93,21 +93,21 @@ def xforms():
 @post('/xforms/')
 def xforms_sync():
     if 'sync' in request.forms:
-        forms = api.get_xforms()
         failed, reports = [], []
 
-        for f in forms:
-            exist = db.XForm.get_by_id(f['id_string'])
-            if exist: 
-                continue
+        for forms in api.get_xforms():
+            for f in forms:
+                exist = db.XForm.get_by_id(f['id_string'])
+                if exist: 
+                    continue
         
-            try:
-                f['date_created'] = datetime.now().strftime(FMT_SHORTDATE)
-                f['active'] = False
-                db.XForm.insert_one(f)
-            except Exception as ex:
-                failed.append(f)
-                reports.append(str(ex))
+                try:
+                    f['date_created'] = datetime.now().strftime(FMT_SHORTDATE)
+                    f['active'] = False
+                    db.XForm.insert_one(f)
+                except Exception as ex:
+                    failed.append(f)
+                    reports.append(str(ex))
 
         session = get_session()
         messages = session['messages']

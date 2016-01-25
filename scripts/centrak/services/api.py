@@ -15,7 +15,7 @@ def _qry2str(qry):
 
 def get_xforms():
     try:
-        url_base = API_BASE_URL & 'data'
+        url_base = API_BASE_URL % 'data'
         return _get(url_base, {})
     except Exception as ex:
         print('error (api.get_xform): %s' % str(ex))
@@ -35,7 +35,7 @@ def get_captures(form_id, date_captured=None, count=False, start=0):
         return []
 
 
-def _get(url_base, query, count=True, start=0, limit=100):
+def _get(url_base, query, count=False, start=0, limit=100):
     def pull_list( start_at):
         params = {'start': start_at, 'limit':limit}
         if query:
