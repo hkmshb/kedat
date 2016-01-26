@@ -2,43 +2,16 @@
 Routes and views for the bottle application.
 """
 from datetime import datetime, date
-from bottle import (
-    post, route, request, response, redirect, template,
-    view as fn_view)
+from bottle import post, route, request, response, redirect, template
 from requests.exceptions import ConnectionError
 from kedat.core import Storage as _
 
 import db                
-from utils import get_session, write_log, get_weekdate_bounds
+from utils import get_session, write_log, get_weekdate_bounds, view,\
+     _get_ref_date
 from services import api, stats, transform, report
 from settings import FMT_SHORTDATE
 
-
-
-def view(tmpl_name):
-    ref_date = _get_ref_date()
-    wkdate_bounds = get_weekdate_bounds(ref_date)
-
-    context = {
-        'year': datetime.now().year,
-        'get_session': get_session,
-        'request': request,
-        
-        # calendar entries
-        'ref_date': ref_date,
-        'weekdate_bounds': wkdate_bounds,
-    }
-    return fn_view(tmpl_name, **context)
-
-
-def _get_ref_date():
-    try:
-        ref_date = request.query.get('refdate', None)
-        ref_date = (datetime.strptime(ref_date, '%Y%m%d').date()
-                    if ref_date else datetime.today().date())
-    except:
-        ref_date = datetime.today().date()
-    return ref_date
 
 
 @route('/')

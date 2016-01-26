@@ -4,24 +4,27 @@ Defines utility functions and classes.
 import os
 from datetime import datetime
 from dateutil import relativedelta as rd
-from bottle import request
+from bottle import request, view as fn_view
 
 from kedat.core import Storage as _
 import settings
 
 
 
-def get_session():
-    """Retrieves the session object"""
-    session = request.environ.get('beaker.session')
-    if 'messages' not in session:
-        session['messages'] = _({
-            'pass': [], 
-            'fail': [], 
-            'warn': []
-        })
-        session.save()
-    return session
+def view(tmpl_name):
+    ref_date = _get_ref_date()
+    wkdate_bounds = get_weekdate_bounds(ref_date)
+
+    context = {
+        'year': datetime.now().year,
+        'get_session': get_session,
+        'request': request,
+        
+        # calendar entries
+        'ref_date': ref_date,
+        'weekdate_bounds': wkdate_bounds,
+    }
+    return fn_view(tmpl_name, **context)
 
 
 def write_log(lines):
@@ -36,6 +39,29 @@ def write_log(lines):
         print("WRITING TO LOG FAILED.\r\n\t%s" % str(ex))
         print("LOG LINES:\r\n%s" % ('\t'.join(lines)))
         print()
+
+
+def _get_ref_date():
+    try:
+        ref_date = request.query.get('refdate', None)
+        ref_date = (datetime.strptime(ref_date, '%Y%m%d').date()
+                    if ref_date else datetime.today().date())
+    except:
+        ref_date = datetime.today().date()
+    return ref_date
+
+
+def get_session():
+    """Retrieves the session object"""
+    session = request.environ.get('beaker.session')
+    if 'messages' not in session:
+        session['messages'] = _({
+            'pass': [], 
+            'fail': [], 
+            'warn': []
+        })
+        session.save()
+    return session
 
 
 def get_weekdate_bounds(ref_date):

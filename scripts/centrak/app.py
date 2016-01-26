@@ -51,7 +51,7 @@ if __name__ == '__main__':
         'app': wsgi_app(), 'server': 'wsgiref',
         'host': HOST, 'port': PORT }
 
-    if '--debug' in argv or 'SERVER_DEBUG' in os.environ:
+    if '--reload' in argv:
         run_args['reloader'] = True
 
     bottle.run(**run_args)

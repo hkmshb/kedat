@@ -89,7 +89,7 @@
                         </div>
                     </div>
                     <input type="hidden" name="ref_date" value="{{ report_ref_date.strftime('%Y-%m-%d')}}" />
-                    <input type="hidden" name="form_id" value="f130_cf05_KN" />
+                    <input type="hidden" name="form_id" value="f130_cf06_KN" />
                     <button type="submit" class="btn btn-primary" style="margin-top:3px;">Generate Report</button>
                 </form>
             </div>

@@ -171,3 +171,42 @@ input[type="checkbox"].input-validation-error {
 .stat-pink { background-color: lightcoral; }
 .stat-yellow { background-color: khaki; }
 .stat-sblue { background-color: skyblue; }
+
+.panel-flat,
+.panel-flat .list-group-item { 
+    border-radius: 0; 
+}
+
+.panel-menu .list-group-item {
+    border-left-width: 5px;
+    border-left-color: none;
+    border-top-color: #fff;
+}
+
+.panel-menu .list-group-item.active,
+.panel-menu .list-group-item.active:first-child {
+    background-color: transparent;
+    border-left: solid 5px #428bca;
+    border-top-color: #ddd;
+    border-radius: 0;
+}
+
+.panel-menu .list-group-item.active:first-child {
+    border-radius: 0;
+    border-top-color: #fff;
+    border-bottom-color: #ddd;
+}
+
+.panel-menu .list-group-item.active:hover {
+    background-color: #eee;
+    border-top-color: #ddd;
+    font-weight: bold;
+}
+
+.panel-menu .list-group-item:not(.active) .txt {
+    padding-left: 5px;
+}
+
+.panel-table .label { font-size: 12px; padding-top: 3px; }
+.panel-table a:hover { text-decoration: none; }
+.panel-table a:focus { border: none; }

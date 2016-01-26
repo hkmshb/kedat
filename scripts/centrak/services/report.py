@@ -1,4 +1,4 @@
-import os
+﻿import os
 import pandas as pd
 from datetime import datetime
 
@@ -14,9 +14,10 @@ if not os.path.exists(REPORT_DIR):
 
 
 def _norm(df):
-    columns = ['rseq', 'enum_id']
-    for col in columns:
-        df[col] = df[col].apply(lambda x: str(x).upper())
+    if df.index.size:
+        columns = ['rseq', 'enum_id']
+        for col in columns:
+            df[col] = df[col].apply(lambda x: str(x).upper())
     return df
 
 
@@ -27,7 +28,8 @@ def get_duplicate_rseq(df):
     for value in d[key].values:
         result = result.append(df[df[key] == value][report_cols])
 
-    result = _norm(result).sort(['rseq'], ascending=[1])
+    if result.index.size:
+        result = _norm(result).sort(['rseq'], ascending=[1])
     return result
 
 
@@ -39,7 +41,8 @@ def get_duplicate_accts(df):
     for value in d[key].values:
         result = result.append(df[df[key] == value][report_cols])
 
-    result = _norm(result).sort(['acct_no'], ascending=[1])
+    if result.index.size:
+        result = _norm(result).sort(['acct_no'], ascending=[1])
     return result
 
 

@@ -18,12 +18,31 @@ db = conn.test_centrak
 class XForm:
 
     @staticmethod
-    def get_all(include_inactive=False):
+    def count(include_inactive=False):
+        qry = {} if include_inactive else {'active': True}
+        return db.xforms.count(qry)
+
+    @staticmethod
+    def get_all(include_inactive=False, paginate=True):
         qry = {} if include_inactive else {'active': True}
         cur = db.xforms.find(qry)\
                 .sort('id', pymongo.ASCENDING)
-        return utils.paginate(cur)
-    
+        return utils.paginate(cur) if paginate else cur
+
+    @staticmethod
+    def get_all_unassigned(include_inactive=False, paginate=True):
+        xforms = []
+        for p in Project.get_all(paginate=False):
+            xforms.extend(p['xforms'])
+
+        qry = {'id': {'$nin': xforms}}
+        if not include_inactive:
+            qry.update({'active': True})
+
+        cur = db.xforms.find(qry)\
+                .sort('id', pymongo.ASCENDING)
+        return utils.paginate(cur) if paginate else cur
+  
     @staticmethod
     def get_by_id(id):
         record = db.xforms.find_one({'id_string': id })
@@ -84,3 +103,40 @@ class Capture:
     @staticmethod
     def save_many(records):
         db.captures.insert_many(records)
+
+
+class Project:
+    
+    @staticmethod
+    def count():
+        return db.projects.count({})
+
+    @staticmethod
+    def get_all(include_inactive=True, paginate=True):
+        qry = {} if include_inactive else {'active': True}
+        cur = db.projects.find(qry)\
+                .sort('id', pymongo.ASCENDING)
+        return utils.paginate(cur) if paginate else cur
+
+    @staticmethod
+    def get_by_id(id):
+        record = db.projects.find_one({'id': id})
+        return _(record or {})
+
+    @staticmethod
+    def insert_one(record):
+        return db.projects.insert_one(record)
+    
+    @staticmethod
+    def set_active(id, status):
+        return db.projects.update_one(
+            {'id': id},
+            {'$set': {'active': status}}
+        )
+    
+    @staticmethod
+    def update_one(record):
+        del record['_id']
+        return db.projects\
+                 .update({'id': record.id}, record)
+

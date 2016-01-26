@@ -36,7 +36,7 @@ report_cols = [
     # cust-info
     'cust_name', 'cust_mobile1', 'addy_house_no', 'addy_street', 
     # acct-info
-    'acct_status', 'acct_no', 'current',
+    'acct_status', 'acct_no', 'tariff',
     # meter-status
     'meter_status', 'meter_no', 'meter_type',
     # others

@@ -25,8 +25,14 @@
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
+                    <li><a href="/projects/">Projects</a></li>
                     <li><a href="/xforms/">XForms</a></li>
                 </ul>
+                <div class="pull-right">
+                    <ul class="nav navbar-nav">
+                        <li><a href="/admin/">Admin</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
