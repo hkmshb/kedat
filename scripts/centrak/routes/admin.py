@@ -1,11 +1,13 @@
 ﻿"""
 Routes and views for admin access.
 """
-from bottle import HTTPError, route, request, redirect
+from bottle import HTTPError, post, route, request, redirect
+from requests import ConnectionError
 import pymongo
 
 from kedat.core import Storage as _
 from utils import view, get_session
+from services import api
 import db, forms
 
 
@@ -20,15 +22,6 @@ def index():
             'count_projects': db.Project.count()
         })
     }
-
-
-
-
-@route('/admin/xforms/')
-@view('admin/xforms')
-def xforms():
-    forms = db.XForm.get_all(include_inactive=True)
-    return { 'title':'XForms', 'records': forms }
 
 
 @route('/admin/projects/')
@@ -79,5 +72,78 @@ def manage_project(id=None):
     return {
         'title':'Projects',
         'project': project,
-        'xforms': xforms 
+        'xforms': [_(f) for f in xforms]
     }
+
+
+@route('/admin/xforms/')
+@view('admin/xforms')
+def xforms():
+    forms = db.XForm.get_all(include_inactive=True)
+    return { 'title':'XForms', 'records': forms }
+
+
+@post('/admin/xforms/sync')
+def xforms_sync():
+    failed, reports = [], []
+    session = get_session()
+    messages = session['messages']
+
+    try:
+        for forms in api.get_xforms():
+            for f in forms:
+                exist = db.XForm.get_by_id(f['id_string'])
+                if exist: 
+                    continue
+        
+                try:
+                    f['active'] = False
+                    db.XForm.insert_one(f)
+                except Exception as ex:
+                    failed.append(f)
+                    reports.append(str(ex))
+
+        if not failed:
+            messages['pass'].append('Sync was successful.')
+        else:
+            all_failed = (len(forms) - len(failed)) == 0
+            if all_failed:
+                messages['fail'].append('Sync was unsuccessful.')
+            else:
+                msg = 'Sync was partially successful. %s entries failed.'
+                messages['warn'].append(msg % len(failed))
+
+            write_log(reports)
+    except ConnectionError as ex:
+        messages['fail'].append('Connection Error. Unable to establish '
+                                'Internet connection.')
+    return redirect('/admin/xforms/')
+
+
+@post('/admin/xforms/update')
+def xforms_update():
+    active = request.forms.getall('activate')
+    startup_all = request.forms.get('startup-all').split(',')
+    startup_active = request.forms.get('startup-active').split(',')
+
+    updated = []
+
+    # handle recently activated forms
+    new_actives = [x for x in active if x not in startup_active]
+    for id in new_actives:
+        db.XForm.set_active(id, True)
+        updated.append(id)
+
+    # handle recently deactivated forms
+    inactives = [x for x in startup_all if x not in active]
+    startup_inactives = [x for x in startup_all if x not in startup_active]
+    new_inactives = [x for x in inactives if x not in startup_inactives]
+    for id in new_inactives:
+        print(db.XForm.set_active(id, False))
+        updated.append(id)
+
+    if updated:
+        session = get_session()
+        session['messages']['pass'].append('%s XForm(s) Updated.' % len(updated))
+        session.save()
+    return redirect('/admin/xforms/')

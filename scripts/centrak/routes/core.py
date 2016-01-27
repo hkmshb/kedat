@@ -53,6 +53,27 @@ def index():
     }
 
 
+@route('/projects/')
+@view('projects')
+def projects():
+    records = []
+    projects = db.Project.get_all()
+
+    for p in projects:
+        record = _(project_id=p.id, name=p.name)
+        captures = db.Capture.get_by_project(p.id, paginate=False)
+        if captures.count():
+            summary = stats.series_purity_summary(captures)
+            record.update(summary)
+            print(record)
+        records.append(record)
+
+    return {
+        'title': 'Projects',
+        'records': records
+    }
+
+
 @route('/xforms/')
 @view('xforms')
 def xforms():

@@ -1,6 +1,7 @@
 ﻿"""
 Transform json data from on form to another.                             
 """
+from datetime import datetime
 
 
 RULES = {
@@ -11,13 +12,17 @@ RULES = {
             '_geolocation',
         ],
         'name_map': {
-            'house_no': 'no',
+            'addy_house_no': 'addy_no',
             'multi_source': 'multi',
             'occupant_status': 'occupant',
             'neighbour_rseqid': 'neighbour_rseq',
             'cust_gps_coord': 'gps',
             'rseqId': 'rseq',
         },
+        'transform': [
+            'cust_name',
+            'enum_id',
+        ],
     }
 }
 
@@ -79,13 +84,16 @@ def to_nested_dict(d):
 def to_flatten_dict(entry):
     """Remove group names from key-name"""
     target = {}
+    today_date = datetime.today().date().isoformat()
     rules_excl = RULES['instance']['excludes']
     rules_nmap = RULES['instance']['name_map']
+    rules_xfrm = RULES['instance']['transform']
 
     for k, v in entry.items():
         if k in rules_excl:
             continue
 
+        last_key = None
         if '/'  in k:
             # exclude entries
             key, ikey = k.split('/')
@@ -96,18 +104,34 @@ def to_flatten_dict(entry):
             if ikey in rules_nmap:
                 ikey = rules_nmap[ikey]
             
+            last_key = ikey
             target[ikey] = v
         else:
+            last_key = k
             target[k] = v
+        
+        # text transform
+        if last_key in rules_xfrm:
+            target[last_key] = target[last_key].upper()
+        last_key = None
 
     # other transforms
     #----------------------------------------------------------
     target['gps'] = [float(v) for v in target['gps'].split(' ')]
     
-    # set xform_id
+    # add new entries
+    ## set project_id
     parts = target['_xform_id_string'].split('_')
     xform_id = '%s_%s_%s' % (parts[0], parts[1][:2],  parts[2])
-    target['xform_id'] = xform_id
-
+    target['project_id'] = xform_id
+    
+    ## more entries
+    target['group'] = target['enum_id'][1]
+    target['substation'] = target['rseq'][:6]
+    target['date_created'] = today_date
+    target['last_updated'] = None
+    target['validated'] = False
+    target['snapshots'] = {}
+    target['dropped'] = False
     return target
 

@@ -12,7 +12,55 @@ from kedat.core import Storage as _
 
 # connection
 conn = pymongo.MongoClient()
-db = conn.test_centrak
+db = conn.centrak
+
+
+
+class Project:
+    
+    @staticmethod
+    def count():
+        return db.projects.count({})
+
+    @staticmethod
+    def get_all(include_inactive=True, paginate=True):
+        qry = {} if include_inactive else {'active': True}
+        cur = db.projects.find(qry)\
+                .sort('id', pymongo.ASCENDING)
+        return utils.paginate(cur) if paginate else cur
+
+    @staticmethod
+    def get_by_id(id):
+        record = db.projects.find_one({'id': id})
+        return _(record or {})
+
+    @staticmethod
+    def insert_one(record):
+        tdy = datetime.today().date().isoformat()
+        record['date_created'] = tdy
+        record['last_modified'] = None
+        return db.projects\
+                 .insert_one(record)
+    
+    @staticmethod
+    def set_active(id, status):
+        tdy = datetime.today().date().isoformat()
+        return db.projects\
+                 .update_one(
+            {'id': id},
+            {'$set': {
+                'active': status,
+                'last_modified': tdy}
+            }
+        )
+    
+    @staticmethod
+    def update_one(record):
+        tdy = datetime.today().date().isoformat()
+        record['last_modified'] = tdy
+        del record['_id']
+        return db.projects\
+                 .update({'id': record.id}, record)
 
 
 class XForm:
@@ -26,7 +74,7 @@ class XForm:
     def get_all(include_inactive=False, paginate=True):
         qry = {} if include_inactive else {'active': True}
         cur = db.xforms.find(qry)\
-                .sort('id', pymongo.ASCENDING)
+                .sort('id', pymongo.DESCENDING)
         return utils.paginate(cur) if paginate else cur
 
     @staticmethod
@@ -50,13 +98,21 @@ class XForm:
 
     @staticmethod
     def insert_one(record):
-        return db.xforms.insert_one(record)
+        tdy = datetime.today().date().isoformat()
+        record['date_created'] = tdy
+        record['last_modified'] = None
+        return db.xforms\
+                 .insert_one(record)
     
     @staticmethod
     def set_active(id, status):
+        tdy = datetime.today().date().isoformat()
         return db.xforms.update_one(
             {'id_string': id},
-            {'$set': {'active': status}}
+            {'$set': {
+                'active': status,
+                'last_modified': tdy }
+            }
         )
 
 
@@ -101,42 +157,12 @@ class Capture:
         return utils.paginate(cur) if paginate else cur
 
     @staticmethod
-    def save_many(records):
-        db.captures.insert_many(records)
-
-
-class Project:
-    
-    @staticmethod
-    def count():
-        return db.projects.count({})
-
-    @staticmethod
-    def get_all(include_inactive=True, paginate=True):
-        qry = {} if include_inactive else {'active': True}
-        cur = db.projects.find(qry)\
-                .sort('id', pymongo.ASCENDING)
+    def get_by_project(pjt_id, paginate=True):
+        cur = db.captures\
+                .find({'project_id': pjt_id})\
+                .sort('date_created', pymongo.DESCENDING)
         return utils.paginate(cur) if paginate else cur
 
     @staticmethod
-    def get_by_id(id):
-        record = db.projects.find_one({'id': id})
-        return _(record or {})
-
-    @staticmethod
-    def insert_one(record):
-        return db.projects.insert_one(record)
-    
-    @staticmethod
-    def set_active(id, status):
-        return db.projects.update_one(
-            {'id': id},
-            {'$set': {'active': status}}
-        )
-    
-    @staticmethod
-    def update_one(record):
-        del record['_id']
-        return db.projects\
-                 .update({'id': record.id}, record)
-
+    def save_many(records):
+        db.captures.insert_many(records)

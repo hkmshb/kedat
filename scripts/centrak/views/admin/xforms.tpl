@@ -1,4 +1,4 @@
-<form method="post">
+<form method="post" class="xform-list">
     <div class="panel panel-default">
         <div class="panel-heading">
             XForms
@@ -39,4 +39,28 @@
     </div>
 </form>
 
-% rebase('admin/base.tpl', title=title, year=year)
+% def scripts():
+<script type="text/javascript">
+    (function($) {
+        $(function(){
+            var $form = $('.xform-list')
+              , form = $form[0];
+              
+            $form.find('button[name=save]')
+                 .on('click', function(){
+                     form.action=window.location.pathname + 'update';
+                     form.submit();
+                     return false;
+                 });
+            
+            $form.find('button[name=sync]')
+                 .on('click', function(){
+                    form.action = window.location.pathname + 'sync';
+                    form.submit();
+                    return false;
+                 });
+        }); 
+    })(jQuery);
+</script>
+% end
+% rebase('admin/base.tpl', title=title, year=year, extra_scripts=scripts)
