@@ -22,6 +22,7 @@ RULES = {
         'transform': [
             'cust_name',
             'enum_id',
+            'rseq',
         ],
     }
 }
@@ -126,8 +127,9 @@ def to_flatten_dict(entry):
     target['project_id'] = xform_id
     
     ## more entries
-    target['group'] = target['enum_id'][1]
-    target['substation'] = target['rseq'][:6]
+    target['group'] = target['enum_id'][0]
+    target['station'] = target['rseq'][:6]
+    target['upriser'] = target['rseq'][:8]
     target['date_created'] = today_date
     target['last_updated'] = None
     target['validated'] = False

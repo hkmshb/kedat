@@ -20,7 +20,7 @@
                 <table class="table panel-table">
                     <thead>
                         <tr>
-                            <th>XForm</th>
+                            <th>Project</th>
                             <th title="Today" class="lvsep">Today</th>
                             <th title="Today Duplicate RSeq">#DRS</th>
                             <th title="Today Duplicate A/C#">#DAC</th>
@@ -41,7 +41,7 @@
                     <tbody>
                     % if records:
                         % for r in records:
-                        <tr><td><a href="/xforms/{{r.id_string}}/">{{ r.title }}</a></td>
+                        <tr><td><a href="/projects/{{r.id}}/">{{ r.name }}</a></td>
                             <td class="lvsep">{{ r.d_total or '-' }}</td>
                             <td>{{ r.d_rseq_duplicates or '-' }}</td>
                             <td>{{ r.d_acctno_duplicates or '-' }}</td>

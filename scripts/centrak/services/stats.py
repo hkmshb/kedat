@@ -8,17 +8,17 @@ from kedat.core import Storage as _
 
 
 
+
+def activity_summary(records):
+    df = pd.DataFrame(list(records))
+    return _activity_summary(df)
+
+
 def series_purity_summary(records, ref_date=None):
     df = pd.DataFrame(list(records))
     result, key = _(), 'datetime_today'
     if not ref_date:
         ref_date = datetime.now().date()
-
-    if 'last_updated' not in df.columns:
-        df['last_updated'] = None
-
-    if 'is_junk' not in df.columns:
-        df['is_junk'] = None
 
     # today
     f = df[df[key] == ref_date.isoformat()]
@@ -61,10 +61,6 @@ def _activity_by_day(df):
     if not df.index.size:
         return results
     
-    for k in ('last_updated', 'is_junk'):
-        if k not in df.columns:
-            df[k] = None
-    
     # group records by date
     groups = df.groupby(key)
     gs = groups['rseq'].count()
@@ -78,9 +74,7 @@ def _activity_by_day(df):
         
         # purity check
         gdf = groups.get_group(gs.index[i])
-        result.update(_purity_summary(gdf, ''))
-        result.update(_acct_status_summary(gdf))
-        result.update(_meter_type_summary(gdf))
+        result.update(_activity_summary(gdf))
         
         # collect results
         results.append(_(result))
@@ -91,13 +85,6 @@ def _activity_by_day(df):
 def _activity_breakdown(df):
     results = []
     
-    # update dataframe content
-    df['group'] = df['enum_id'].apply(lambda r: (r.split('/')[0]).upper())
-    df['upriser'] = df['rseq'].apply(lambda r: (r[:8]).upper())
-    for k in ('last_updated', 'is_junk'):
-        if k not in df.columns:
-            df[k] = None
-
     # group records by group-name
     ggroups = df.groupby('group')
     gs = ggroups['rseq'].count()
@@ -142,8 +129,6 @@ def _activity_stats(df):
     result.capture_count = df.index.size
     
     # number of transformers & uprisers
-    df['station'] = df['rseq'].apply(lambda x: x[:6].upper())
-    df['upriser'] = df['rseq'].apply(lambda x: x[:8].upper())
     gdf = df.groupby('station')
     result.transformer_count = gdf['station'].count().index.size
 
@@ -157,30 +142,33 @@ def _activity_stats(df):
     return result
 
 
+def _activity_summary(df):
+    result = _()
+    result.update(_purity_summary(df, ''))
+    result.update(_acct_status_summary(df))
+    result.update(_meter_type_summary(df))
+    return result
+
+
 def _purity_summary(df, prefix):
     result, key = _(), 'datetime_today'
-    result['%s_total' % prefix] = df[key].size
+    result['%s_total' % prefix] = df.index.size
 
     # duplicate rseq check
     key = 'rseq'
     f = df[df.duplicated(key) == True]
-    result['%s_rseq_duplicates' % prefix] = f[key].size
+    result['%s_rseq_duplicates' % prefix] = f.index.size
 
     # duplicate acct_no check
     key = 'acct_no'
     f = df[df[key].isnull() == False]
     f = f[f.duplicated(key) == True]
-    result['%s_acctno_duplicates' % prefix] = f[key].size
+    result['%s_acctno_duplicates' % prefix] = f.index.size
 
     # fixed/updated records
     key = 'last_updated'
     f = df[df[key].isnull() == False]
-    result['%s_updated' % prefix] = f[key].size
-
-    # junk records
-    key = 'is_junk'
-    f = df[df[key].isnull() == False]
-    result['%s_junk' % prefix] = f[key].size
+    result['%s_updated' % prefix] = f.index.size
     return result
 
 

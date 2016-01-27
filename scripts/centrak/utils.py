@@ -8,7 +8,6 @@ from dateutil import relativedelta as rd
 from bottle import request, view as fn_view
 
 from kedat.core import Storage as _
-from db import db
 import settings
 
 
@@ -191,6 +190,7 @@ class MongoDbSetupMiddleware:
         return self.wrapped_app(environ, start_response)
     
     def _create_indexes(self):
+        from db import db
         IndexModel = pymongo.IndexModel
         ASC = pymongo.ASCENDING
 

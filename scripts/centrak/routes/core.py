@@ -2,7 +2,7 @@
 Routes and views for the bottle application.
 """
 from datetime import datetime, date
-from bottle import post, route, request, response, redirect, template
+from bottle import HTTPError, post, route, request, response, redirect
 from requests.exceptions import ConnectionError
 from kedat.core import Storage as _
 
@@ -20,13 +20,13 @@ def index():
     #+==========================
     #: forms series summary
     records = []
-    forms = db.XForm.get_all()
+    projects = db.Project.get_all()
     ref_date = _get_ref_date()
     wkdate_bounds = get_weekdate_bounds(ref_date)
 
-    for f in forms:
-        record = _(id_string=f.id_string, title=f.title)
-        captures = db.Capture.get_by_form(f.id_string, paginate=False)
+    for p in projects:
+        record = _(id=p.id, name=p.name)
+        captures = db.Capture.get_by_project(p.id, paginate=False)
         if captures.count():
             summary = stats.series_purity_summary(captures, ref_date)
             record.update(summary)
@@ -60,18 +60,75 @@ def projects():
     projects = db.Project.get_all()
 
     for p in projects:
-        record = _(project_id=p.id, name=p.name)
+        record = _(id=p.id, name=p.name)
         captures = db.Capture.get_by_project(p.id, paginate=False)
         if captures.count():
-            summary = stats.series_purity_summary(captures)
+            summary = stats.activity_summary(captures)
             record.update(summary)
-            print(record)
         records.append(record)
 
     return {
         'title': 'Projects',
         'records': records
     }
+
+
+@route('/projects/<project_id>/')
+@view('project-view')
+def project_view(project_id):
+    project = db.Project.get_by_id(project_id)
+    records = []
+
+    for f in project.xforms:
+        xform = db.XForm.get_by_id(f)
+        record = _(id=xform.id_string, title=xform.title)
+        captures = db.Capture.get_by_form(f, False)
+        if captures.count():
+            summary = stats.activity_summary(captures)
+            print(summary)
+            record.update(summary)
+        records.append(record)
+
+    return {
+        'title': 'Project: %s' % project.name,
+        'project': project,
+        'records': records
+    }
+
+
+@post('/projects/<project_id>/sync')
+def project_sync(project_id):
+    p = db.Project.get_by_id(project_id)
+    if not p:
+        raise HTTPError(404, 'Project not found: %s' % project_id)
+
+    messages = get_session()['messages']
+    xforms_to_sync = request.forms.get('project_xforms').split(',');
+
+    # get form count
+    for xform_id in xforms_to_sync:
+        count = db.Capture.count_by_form(xform_id)
+        xform = db.XForm.get_by_id(xform_id)
+
+        # pull new captures
+        try:
+            transformed, pull_count = [], 0
+            for captures in api.get_captures(xform.id, start=count):
+                if captures:
+                    pull_count += len(captures)
+                    for c in captures:
+                        transformed.append(transform.to_flatten_dict(c))
+
+                    db.Capture.save_many(transformed)
+                    transformed = []
+
+            messages['pass'].append('%s captures pulled.' % pull_count)
+        except ConnectionError:
+            messages['fail'].append('Sync failed. Internet connection required.')
+        except Exception as ex:
+            messages['fail'].append('Sync failed. %s' % str(ex))
+
+    return redirect('/projects/%s/' % project_id)
 
 
 @route('/xforms/')
@@ -197,7 +254,6 @@ def xform_capture_sync(id_string):
         except Exception as ex:
             session['messages']['fail'].append('Sync failed: %s' % str(ex))
     
-
     return redirect('/xforms/%s/' % id_string)
 
 
@@ -210,5 +266,4 @@ def report_default():
     session = get_session()
     session['messages']['pass'].append('Report generated.')
     return redirect('/')
-
 

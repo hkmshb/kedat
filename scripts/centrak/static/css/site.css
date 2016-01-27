@@ -210,3 +210,5 @@ input[type="checkbox"].input-validation-error {
 .panel-table .label { font-size: 12px; padding-top: 3px; }
 .panel-table a:hover { text-decoration: none; }
 .panel-table a:focus { border: none; }
+
+label.item-title { font-weight: normal; }
