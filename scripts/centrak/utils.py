@@ -2,11 +2,13 @@
 Defines utility functions and classes.
 """
 import os
+import pymongo
 from datetime import datetime
 from dateutil import relativedelta as rd
 from bottle import request, view as fn_view
 
 from kedat.core import Storage as _
+from db import db
 import settings
 
 
@@ -177,4 +179,40 @@ class Paginator:
     def _get_chunk_count(self, total, size):
         q, r = int(total / size), (total % size)
         return (q if r == 0 else (q + 1))
+
+
+class MongoDbSetupMiddleware:
+
+    def __init__(self, app):
+        self.wrapped_app = app
+
+    def __call__(self, environ, start_response):
+        self._create_indexes()
+        return self.wrapped_app(environ, start_response)
+    
+    def _create_indexes(self):
+        IndexModel = pymongo.IndexModel
+        ASC = pymongo.ASCENDING
+
+        # projects collection
+        indexes = [IndexModel([('id', ASC)], unique=True),
+                   IndexModel([('name', ASC)], unique=True)]
+        db.projects.create_indexes(indexes)
+
+        # xforms collection
+        indexes = [IndexModel([('id_string', ASC)]),
+                   IndexModel([('id', ASC)], unique=True),
+                   IndexModel([('title', ASC)], unique=True)]
+        db.xforms.create_indexes(indexes)
+
+        # captures
+        indexes = [IndexModel([('rseq', ASC)]),
+                   IndexModel([('group', ASC)]),
+                   IndexModel([('acct_no', ASC)]),
+                   IndexModel([('substation', ASC)]),
+                   IndexModel([('meter_type', ASC)]),
+                   IndexModel([('meter_phase', ASC)]),
+                   IndexModel([('acct_status', ASC)]),
+                   IndexModel([('cust_mobile1', ASC)])]
+        db.captures.create_indexes(indexes)
 

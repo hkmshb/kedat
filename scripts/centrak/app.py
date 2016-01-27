@@ -7,6 +7,7 @@ import bottle
 from beaker.middleware import SessionMiddleware
 
 import settings
+from utils import MongoDbSetupMiddleware
 
 
 # routes contains the HTTP handlers for our server and must be imported.
@@ -29,6 +30,7 @@ def wsgi_app():
         'session.auto': True
     }
     app = SessionMiddleware(bottle.default_app(), session_options)
+    app = MongoDbSetupMiddleware(app)
     return app
 
 if __name__ == '__main__':    
