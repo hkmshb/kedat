@@ -34,7 +34,7 @@ report_cols = [
     # gen
     'datetime_today', 'rseq', 'enum_id', 
     # cust-info
-    'cust_name', 'cust_mobile1', 'addy_house_no', 'addy_street', 
+    'cust_name', 'cust_mobile1', 'addy_no', 'addy_street', 
     # acct-info
     'acct_status', 'acct_no', 'tariff',
     # meter-status
@@ -42,4 +42,3 @@ report_cols = [
     # others
     'plot_type', 'occupant', 'remarks',
 ]
-

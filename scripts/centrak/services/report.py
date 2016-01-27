@@ -29,7 +29,7 @@ def get_duplicate_rseq(df):
         result = result.append(df[df[key] == value][report_cols])
 
     if result.index.size:
-        result = _norm(result).sort(['rseq'], ascending=[1])
+        result = result.sort(['rseq'], ascending=[1])
     return result
 
 
@@ -42,7 +42,7 @@ def get_duplicate_accts(df):
         result = result.append(df[df[key] == value][report_cols])
 
     if result.index.size:
-        result = _norm(result).sort(['acct_no'], ascending=[1])
+        result = result.sort(['acct_no'], ascending=[1])
     return result
 
 
@@ -121,7 +121,7 @@ def get_notes(ref_date):
     return rows
 
 
-def write_report(form_id, ref_date):
+def write_report(project_id, ref_date):
     if not ref_date:
         ref_date = datetime.now().date().isoformat()
 
@@ -136,7 +136,7 @@ def write_report(form_id, ref_date):
         df.to_excel(writer, 'notes', index=False)
 
         # begin captures analysis
-        all_captures = db.Capture.get_by_form(form_id, False)
+        all_captures = db.Capture.get_by_project(project_id, False)
         df = pd.DataFrame(list(all_captures))
 
         # summarize activities by day

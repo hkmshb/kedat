@@ -79,7 +79,16 @@
             <div class="panel-body">
                 <form method="post" class="form-inline report-form" action="/r/default/">
                     <div class="form-group">
-                        <div class="input-group date pull-left" style="width: 120px;">
+                        <select name="project_id" class="form-control">
+                        % if records:
+                            % for r in records:
+                            <option value="{{ r.id }}">{{ r.name[:8] }}</option>
+                            % end
+                        % end
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-top:3px;">
+                        <div class="input-group date pull-left" style="width: 133px;">
                             <input type="text" class="form-control" placeholder="dd/mm/yyyy"
                                    required="" disabled="" value="{{report_ref_date.strftime('%d/%m/%Y')}}">
                                 <span class="input-group-addon btn" style="border-radius: 0 4px 4px 0;">
@@ -88,21 +97,25 @@
                             </input>
                         </div>
                     </div>
-                    <input type="hidden" name="ref_date" value="{{ report_ref_date.strftime('%Y-%m-%d')}}" />
-                    <input type="hidden" name="form_id" value="f130_cf06_KN" />
                     <button type="submit" class="btn btn-primary" style="margin-top:3px;">Generate Report</button>
+                    <input type="hidden" name="ref_date" value="{{ report_ref_date.strftime('%Y-%m-%d')}}" />
                 </form>
             </div>
         </div>
     </div>
 </div>
 
+% def head():
+<link rel="stylesheet" type="text/css" href="/static/css/select2.min.css" />
+<link rel="stylesheet" type="text/css" href="/static/css/select2-bootstrap.css" />
+% end
 % def scripts():
+<script src="/static/js/select2.full.min.js"></script>
 <script>
     (function($) {
         $(function(){
            index_page(); 
-           
+           $('[name=project_id]').select2();
            $('.date-input').datepicker({
                     format: "dd/mm/yyyy", clearBtn: true,
                     autoclose: true, toggleActive: true,
@@ -128,4 +141,4 @@
     })(jQuery);
 </script>
 % end
-% rebase('layout.tpl', title=title, year=year, extra_scripts=scripts)
+% rebase('layout.tpl', title=title, year=year, extra_head=head, extra_scripts=scripts)

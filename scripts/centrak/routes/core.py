@@ -259,11 +259,16 @@ def xform_capture_sync(id_string):
 
 @post('/r/default/')
 def report_default():
-    ref_date = request.forms.get('ref_date')
-    form_id = request.forms.get('form_id')
+    messages = get_session()['messages']
 
-    report.write_report(form_id, ref_date)
-    session = get_session()
-    session['messages']['pass'].append('Report generated.')
+    project_id = request.forms.get('project_id')
+    ref_date = request.forms.get('ref_date')
+
+    try:
+        report.write_report(project_id, ref_date)
+        messages['pass'].append('Report generated.')
+    except Exception as ex:
+        messages['fail'].append('Report generation failed. %s' % str(ex))
+        print(ex)
     return redirect('/')
 
