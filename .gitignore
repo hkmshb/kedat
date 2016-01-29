@@ -6,6 +6,7 @@ session-dat/
 .vs/
 
 
+secret.py
 .*project
 *.pyproj
 *.config
