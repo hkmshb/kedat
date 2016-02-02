@@ -8,6 +8,7 @@ from dateutil import relativedelta as rd
 from bottle import request, view as fn_view
 
 from kedat.core import Storage as _
+from routes import authnz
 import settings
 
 
@@ -19,6 +20,7 @@ def view(tmpl_name):
     context = {
         'year': datetime.now().year,
         'get_session': get_session,
+        'get_authnz': get_authnz,
         'request': request,
         
         # calendar entries
@@ -64,6 +66,9 @@ def get_session():
         session.save()
     return session
 
+
+def get_authnz():
+    return authnz
 
 def get_weekdate_bounds(ref_date):
     start_date = ref_date

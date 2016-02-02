@@ -13,6 +13,7 @@
     % end
 </head>
 <body>
+    % authnz = get_authnz()
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
             <div class="navbar-header">
@@ -26,11 +27,17 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li><a href="/projects/">Projects</a></li>
-                    <li><a href="/xforms/">XForms</a></li>
                 </ul>
                 <div class="pull-right">
                     <ul class="nav navbar-nav">
+                    % if not authnz.user_is_anonymous and authnz.current_user.role == 'admin':
                         <li><a href="/admin/">Admin</a></li>
+                    % end
+                    % if authnz.user_is_anonymous:
+                        <li><a href="/login">Log In</a></li>
+                    % else:
+                        <li><a href="/logout">Log Out</a></li>
+                    % end                    
                     </ul>
                 </div>
             </div>

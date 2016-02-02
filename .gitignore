@@ -1,6 +1,7 @@
 __pycache__/
 session-dat/
 [_.]ignore/
+auth_conf/
 [Bb]in/
 [Oo]bj/
 .vs/

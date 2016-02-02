@@ -6,6 +6,7 @@ from requests import ConnectionError
 import pymongo
 
 from kedat.core import Storage as _
+from routes import authnz, authorize
 from utils import view, get_session
 from services import api
 import db, forms
@@ -14,6 +15,7 @@ import db, forms
 
 @route('/admin/')
 @view('admin/index')
+@authorize(role='editor')
 def index():
     return {
         'title': 'Admin',
@@ -26,6 +28,7 @@ def index():
 
 @route('/admin/projects/')
 @view('admin/projects')
+@authorize(role='editor')
 def projects():
     def func(xforms):
         def f(id):
@@ -46,6 +49,7 @@ def projects():
 @route('/admin/projects/create', method=['GET', 'POST'])
 @route('/admin/projects/<id>/', method=['GET', 'POST'])
 @view('admin/project-form')
+@authorize(role='editor')
 def manage_project(id=None):
     project = _(xforms=[]) if not id else db.Project.get_by_id(id)
     if not project:
@@ -78,12 +82,14 @@ def manage_project(id=None):
 
 @route('/admin/xforms/')
 @view('admin/xforms')
+@authorize(role='editor')
 def xforms():
     forms = db.XForm.get_all(include_inactive=True)
     return { 'title':'XForms', 'records': forms }
 
 
 @post('/admin/xforms/sync')
+@authorize(role='editor')
 def xforms_sync():
     failed, reports = [], []
     session = get_session()
@@ -121,6 +127,7 @@ def xforms_sync():
 
 
 @post('/admin/xforms/update')
+@authorize(role='editor')
 def xforms_update():
     active = request.forms.getall('activate')
     startup_all = request.forms.get('startup-all').split(',')

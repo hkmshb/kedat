@@ -11,6 +11,7 @@ from utils import get_session, write_log, get_weekdate_bounds, view,\
      _get_ref_date
 from services import api, stats, transform, report
 from settings import FMT_SHORTDATE
+from routes import authnz, authorize
 
 
 
@@ -75,6 +76,7 @@ def projects():
 
 @route('/projects/<project_id>/')
 @view('project-view')
+@authorize(role='admin')
 def project_view(project_id):
     project = db.Project.get_by_id(project_id)
     records = []
@@ -97,6 +99,7 @@ def project_view(project_id):
 
 
 @post('/projects/<project_id>/sync')
+@authorize(role='editor')
 def project_sync(project_id):
     p = db.Project.get_by_id(project_id)
     if not p:
@@ -131,87 +134,12 @@ def project_sync(project_id):
     return redirect('/projects/%s/' % project_id)
 
 
-@route('/xforms/')
-@view('xforms')
-def xforms():
-    forms = db.XForm.get_all(include_inactive=True)
-    return {
-        'title': 'XForms',
-        'records': forms
-    }      
-
-
-@post('/xforms/')
-def xforms_sync():
-    if 'sync' in request.forms:
-        failed, reports = [], []
-
-        for forms in api.get_xforms():
-            for f in forms:
-                exist = db.XForm.get_by_id(f['id_string'])
-                if exist: 
-                    continue
-        
-                try:
-                    f['date_created'] = datetime.now().strftime(FMT_SHORTDATE)
-                    f['active'] = False
-                    db.XForm.insert_one(f)
-                except Exception as ex:
-                    failed.append(f)
-                    reports.append(str(ex))
-
-        session = get_session()
-        messages = session['messages']
-        if not failed:
-            messages['pass'].append('Sync was successful.')
-        else:
-            all_failed = (len(forms) - len(failed)) == 0
-            if all_failed:
-                messages['fail'].append('Sync was unsuccessful.')
-            else:
-                msg = 'Sync was partially successful. %s entries failed.'
-                messages['warn'].append(msg % len(failed))
-
-            write_log(reports)
-
-        session.save()
-        return redirect('/xforms/')
-
-    elif 'save' in request.forms:
-        active = request.forms.getall('activate')
-        startup_all = request.forms.get('startup-all').split(',')
-        startup_active = request.forms.get('startup-active').split(',')
-
-        updated = []
-
-        # handle recently activated forms
-        new_actives = [x for x in active if x not in startup_active]
-        for id in new_actives:
-            db.XForm.set_active(id, True)
-            updated.append(id)
-
-        # handle recently deactivated forms
-        inactives = [x for x in startup_all if x not in active]
-        startup_inactives = [x for x in startup_all if x not in startup_active]
-        new_inactives = [x for x in inactives if x not in startup_inactives]
-        for id in new_inactives:
-            print(db.XForm.set_active(id, False))
-            updated.append(id)
-
-        if updated:
-            session = get_session()
-            session['messages']['pass'].append('%s XForm(s) Updated.' % len(updated))
-            session.save()
-        return redirect('/xforms/')
-
-
 @route('/xforms/<form_id>/')
 @view('xform-capture-summary')
 def xform_info(form_id):
     xform = db.XForm.get_by_id(form_id)
     captures = db.Capture.get_by_form(form_id, paginate=False)
     summaries = stats.summary_by_day(captures)
-
 
     return {
         'title': 'Daily Summary',
@@ -221,43 +149,8 @@ def xform_info(form_id):
     }
 
 
-@post('/xforms/<id_string>/')
-def xform_capture_sync(id_string):
-    xform = db.XForm.get_by_id(id_string)
-    session = get_session()
-
-    if not xform:
-        session['messages']['warn'].append('XForm with specified id not found')
-    else:
-        date_captured = request.forms.get('date_captured')
-        #id_string = request.forms.get('id_string')
-
-        # get item count
-        count = db.Capture.count_by_date_form(date_captured, id_string)
-        print('.. %s, %s, %s' % (date_captured, id_string, count))
-
-        # pull new captures
-        try:
-            transformed, pull_count = [], 0
-            for captures in api.get_captures(xform['id'], date_captured, start=count):
-                if captures:
-                    pull_count += len(captures)
-                    for c in captures:
-                        transformed.append(transform.to_flatten_dict(c))
-
-                    db.Capture.save_many(transformed)
-                    transformed = []
-
-            session['messages']['pass'].append('%s captures pulled.' % pull_count)
-        except ConnectionError:
-            session['messages']['fail'].append('Sync failed: connection error.')
-        except Exception as ex:
-            session['messages']['fail'].append('Sync failed: %s' % str(ex))
-    
-    return redirect('/xforms/%s/' % id_string)
-
-
 @post('/r/default/')
+@authorize(role='editor')
 def report_default():
     messages = get_session()['messages']
 
