@@ -97,7 +97,7 @@ def get_notes(ref_date):
         ['', 'activity-%s' % date_digits, 'Captures made %s summarized by group by upriser' % ref_date],
         ['', 'dup-rseq-%s' % date_digits, 'Duplicate route-seq. found across captures made %s' % ref_date],
         ['', 'dup-acct-%s' % date_digits, 'Duplicate route. nos. found across captures made %s' % ref_date],
-        ['', 'group-a-%s' % date_digits, 'Captures made by Group-Alpah on %s' % ref_date],
+        ['', 'group-a-%s' % date_digits, 'Captures made by Group-Alpha on %s' % ref_date],
         ['', 'group-b-%s' % date_digits, 'Captures made by Group-Bravo on %s' % ref_date],
         ['', 'group-c-%s' % date_digits, 'Captures made by Group-Charlie on %s' % ref_date],
         ['', 'group-d-%s' % date_digits , 'Captures made by Group-Delta on %s' % ref_date],

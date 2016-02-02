@@ -87,7 +87,6 @@ def project_view(project_id):
         captures = db.Capture.get_by_form(f, False)
         if captures.count():
             summary = stats.activity_summary(captures)
-            print(summary)
             record.update(summary)
         records.append(record)
 
