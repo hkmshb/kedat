@@ -28,3 +28,10 @@ def logout():
     authnz.logout(success_redirect='/')
 
 
+@route('/restricted')
+@view('account/restricted')
+def restricted():
+    return {
+        'title': 'Access Restricted'
+    }
+

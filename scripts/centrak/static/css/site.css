@@ -212,3 +212,10 @@ input[type="checkbox"].input-validation-error {
 .panel-table a:focus { border: none; }
 
 label.item-title { font-weight: normal; }
+li.separator > span {
+    display: inline-block;
+    color: palevioletred;
+    margin-top: 13px;
+    padding-left: 0px; 
+    padding-right: 0px;
+}

@@ -27,15 +27,21 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li><a href="/projects/">Projects</a></li>
+                % if not authnz.user_is_anonymous and authnz.current_user.role == 'admin':
+                    <li><a href="/admin/">Admin</a></li>
+                % end
                 </ul>
                 <div class="pull-right">
                     <ul class="nav navbar-nav">
-                    % if not authnz.user_is_anonymous and authnz.current_user.role == 'admin':
-                        <li><a href="/admin/">Admin</a></li>
-                    % end
                     % if authnz.user_is_anonymous:
                         <li><a href="/login">Log In</a></li>
                     % else:
+                        <li><a href="#">
+                                <i class="glyphicon glyphicon-user"></i>
+                                {{ authnz.current_user.username }}
+                            </a>
+                        </li>
+                        <li class="separator"><span href="#">|</span></li>
                         <li><a href="/logout">Log Out</a></li>
                     % end                    
                     </ul>

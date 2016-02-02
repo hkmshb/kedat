@@ -8,7 +8,6 @@ from dateutil import relativedelta as rd
 from bottle import request, view as fn_view
 
 from kedat.core import Storage as _
-from routes import authnz
 import settings
 
 
@@ -68,7 +67,37 @@ def get_session():
 
 
 def get_authnz():
+    from routes import authnz
     return authnz
+
+
+def make_auth_decorator(cork, username=None, role=None, fixed_role=False, 
+                        fail_unauth_redirect='/login', 
+                        fail_auth_redirect='/restricted'):
+    """
+    Extends the default function by same name provided by bottle-cork where
+    non authenticated users are asked to login and authenticated users with
+    less access permission get an 'Access Restricted' messages.
+    """
+    def auth_required(username=username, role=role, fixed_role=fixed_role,
+                      fail_redirect=fail_unauth_redirect):
+        def decorator(func):
+            import functools
+
+            @functools.wraps(func)
+            def wrapper(*a, **kw):
+                redirect_url = fail_redirect
+                if not cork.user_is_anonymous:
+                    redirect_url = fail_auth_redirect
+
+                cork.require(
+                    username=username, role=role, fixed_role=fixed_role,
+                    fail_redirect=redirect_url)
+                return func(*a, **kw)
+            return wrapper
+        return decorator
+    return auth_required
+
 
 def get_weekdate_bounds(ref_date):
     start_date = ref_date
