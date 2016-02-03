@@ -15,7 +15,7 @@ import db, forms
 
 @route('/admin/')
 @view('admin/index')
-@authorize(role='editor')
+@authorize(role='moderator')
 def index():
     return {
         'title': 'Admin',
@@ -28,7 +28,7 @@ def index():
 
 @route('/admin/projects/')
 @view('admin/projects')
-@authorize(role='editor')
+@authorize(role='moderator')
 def projects():
     def func(xforms):
         def f(id):
@@ -49,7 +49,7 @@ def projects():
 @route('/admin/projects/create', method=['GET', 'POST'])
 @route('/admin/projects/<id>/', method=['GET', 'POST'])
 @view('admin/project-form')
-@authorize(role='editor')
+@authorize(role='moderator')
 def manage_project(id=None):
     project = _(xforms=[]) if not id else db.Project.get_by_id(id)
     if not project:
@@ -82,14 +82,14 @@ def manage_project(id=None):
 
 @route('/admin/xforms/')
 @view('admin/xforms')
-@authorize(role='editor')
+@authorize(role='moderator')
 def xforms():
     forms = db.XForm.get_all(include_inactive=True)
     return { 'title':'XForms', 'records': forms }
 
 
 @post('/admin/xforms/sync')
-@authorize(role='editor')
+@authorize(role='moderator')
 def xforms_sync():
     failed, reports = [], []
     session = get_session()
@@ -127,7 +127,7 @@ def xforms_sync():
 
 
 @post('/admin/xforms/update')
-@authorize(role='editor')
+@authorize(role='moderator')
 def xforms_update():
     active = request.forms.getall('activate')
     startup_all = request.forms.get('startup-all').split(',')

@@ -1,6 +1,9 @@
 """
 Utility script to manage centrak.
 """
+import os, sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+
 import argparse
 from routes import authnz
 from datetime import datetime

@@ -76,7 +76,7 @@ def projects():
 
 @route('/projects/<project_id>/')
 @view('project-view')
-@authorize(role='admin')
+@authorize()
 def project_view(project_id):
     project = db.Project.get_by_id(project_id)
     records = []
@@ -98,7 +98,7 @@ def project_view(project_id):
 
 
 @post('/projects/<project_id>/sync')
-@authorize(role='editor')
+@authorize(role='moderator')
 def project_sync(project_id):
     p = db.Project.get_by_id(project_id)
     if not p:
@@ -149,7 +149,7 @@ def xform_info(form_id):
 
 
 @post('/r/default/')
-@authorize(role='editor')
+@authorize(role='moderator')
 def report_default():
     messages = get_session()['messages']
 
