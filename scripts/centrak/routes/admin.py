@@ -51,11 +51,12 @@ def projects():
 @view('admin/project-form')
 @authorize(role='moderator')
 def manage_project(id=None):
-    project = _(xforms=[]) if not id else db.Project.get_by_id(id)
+    project = _(xforms=[], uforms=[]) if not id else db.Project.get_by_id(id)
     if not project:
         raise HTTPError(404, "Project not found: %s" % id)
 
-    xforms = db.XForm.get_all_unassigned(False, False)
+    xforms = db.XForm.get_unassigned_xforms(False, False)
+    uforms = db.XForm.get_unassigned_uforms(False, False)
     session = get_session()
         
     if request.method == 'POST':
@@ -76,7 +77,8 @@ def manage_project(id=None):
     return {
         'title':'Projects',
         'project': project,
-        'xforms': [_(f) for f in xforms]
+        'xforms': [_(f) for f in xforms],
+        'uforms': [_(f) for f in uforms],
     }
 
 

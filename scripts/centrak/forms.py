@@ -20,6 +20,7 @@ class ProjectForm(FormBase):
         id  = self.request.forms.get('id', '').strip()
         name = self.request.forms.get('name', '').strip()
         xforms = self.request.forms.getall('xforms')
+        uforms = self.request.forms.getall('uforms')
 
         if not id:
             self.errors.append('Project Id required')
@@ -28,14 +29,20 @@ class ProjectForm(FormBase):
         if self.errors:
             return False
 
-        self._instance = _(_id=_id, id=id, name=name, xforms=xforms)
+        self._instance = _(
+            _id=_id, id=id, name=name, 
+            xforms=xforms, uforms=uforms
+        )
         return True
 
     def save(self):
         if not self._instance:
             raise HTTPError(500, "Invalid operation performed.")
 
-        if not self._instance._id:
+        _id = self._instance._id
+        del self._instance['_id']
+
+        if not _id:
             db.Project.insert_one(self._instance)
         else:
             db.Project.update_one(self._instance)

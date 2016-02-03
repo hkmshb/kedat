@@ -79,7 +79,7 @@ def projects():
 @authorize()
 def project_view(project_id):
     project = db.Project.get_by_id(project_id)
-    records = []
+    xrecords, urecords = [], []
 
     for f in project.xforms:
         xform = db.XForm.get_by_id(f)
@@ -88,12 +88,22 @@ def project_view(project_id):
         if captures.count():
             summary = stats.activity_summary(captures)
             record.update(summary)
-        records.append(record)
+        xrecords.append(record)
+
+    for f in project.uforms:
+        uform = db.XForm.get_by_id(f)
+        record = _(id=uform.id_string, title=uform.title)
+        updates = db.Update.get_by_form(f, False)
+        if updates.count():
+            summary = stats.activity_summary(updates)
+            record.update(summary)
+        urecords.append(record)
 
     return {
         'title': 'Project: %s' % project.name,
         'project': project,
-        'records': records
+        'xrecords': xrecords,
+        'urecords': urecords
     }
 
 
@@ -105,11 +115,17 @@ def project_sync(project_id):
         raise HTTPError(404, 'Project not found: %s' % project_id)
 
     messages = get_session()['messages']
-    xforms_to_sync = request.forms.get('project_xforms').split(',');
+    form_type, xforms_to_sync = None, None
+    for key in ['project_xforms', 'project_uforms']:
+        if key in request.forms:
+            form_type = key
+            xforms_to_sync = request.forms.get(key).split(',')
+
+    sync_target = (db.Capture if form_type == 'project_xforms' else db.Update)
 
     # get form count
     for xform_id in xforms_to_sync:
-        count = db.Capture.count_by_form(xform_id)
+        count = sync_target.count_by_form(xform_id)
         xform = db.XForm.get_by_id(xform_id)
 
         # pull new captures
@@ -121,7 +137,7 @@ def project_sync(project_id):
                     for c in captures:
                         transformed.append(transform.to_flatten_dict(c))
 
-                    db.Capture.save_many(transformed)
+                    sync_target.save_many(transformed)
                     transformed = []
 
             messages['pass'].append('%s captures pulled.' % pull_count)

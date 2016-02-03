@@ -118,7 +118,10 @@ def to_flatten_dict(entry):
 
     # other transforms
     #----------------------------------------------------------
-    target['gps'] = [float(v) for v in target['gps'].split(' ')]
+    if 'gps' in target:
+        target['gps'] = [float(v) for v in target['gps'].split(' ')]
+    else:
+        target['gps'] = []
     
     # add new entries
     ## set project_id

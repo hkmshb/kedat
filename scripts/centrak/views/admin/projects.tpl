@@ -19,11 +19,16 @@
                 <tbody>
                 % if records:
                     % for r in records:
-                    <tr><td><a href="/admin/projects/{{ r.id }}/">{{ r.name }}</a></td>
+                    <tr><td style="white-space:nowrap;"><a href="/admin/projects/{{ r.id }}/">{{ r.name }}</a></td>
                         <td>
                         % for f in r.xforms:
                             <a href="/admin/xforms/{{ f }}">
                                 <span class="label label-info">{{ get_xform_title(f) }}</span>
+                            </a>
+                        % end
+                        % for f in r.uforms:
+                            <a href="/admin/xforms/{{ f }}">
+                                <span class="label label-warning">{{ get_xform_title(f) }}</span>
                             </a>
                         % end
                         </td>

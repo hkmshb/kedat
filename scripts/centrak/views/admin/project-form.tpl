@@ -20,9 +20,22 @@
             <div class="form-group">
                 <label for="xforms" class="col-md-2 control-label">XForms: </label>
                 <div class="col-md-6">
-                    <select class="form-control select2" name="xforms" multiple="multiple">
+                    <select class="form-control select2" name="xforms" multiple="multiple"
+                            data-placeholder="Select Capture Form">
                     % for f in xforms:
                         % on = ('selected="selected"' if f.id_string in project.xforms else '')
+                        <option value="{{ f.id_string }}" {{ on }}>{{ f.title }}</option>
+                    % end
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="xforms" class="col-md-2 control-label">UForms: </label>
+                <div class="col-md-6">
+                    <select class="form-control select2" name="uforms" multiple="multiple"
+                            data-placeholder="Select Update Form">
+                    % for f in uforms:
+                        % on = ('selected=""' if f.id_string in project.uforms else '')
                         <option value="{{ f.id_string }}" {{ on }}>{{ f.title }}</option>
                     % end
                     </select>
@@ -47,7 +60,7 @@
 % def extra_scripts():
     <script src="/static/js/select2.full.min.js"></script>
     <script type="text/javascript">
-        $('.select2').select2();    
+        $('.select2').select2();
     </script>
 % end
 % rebase('admin/base.tpl', title=title, year=year, extra_head=extra_head, extra_scripts=extra_scripts)
