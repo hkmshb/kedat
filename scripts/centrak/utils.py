@@ -113,9 +113,9 @@ def get_monthdate_bounds(ref_date):
     return (start_date, end_date)
 
 
-def paginate(cursor, qs_page='pg', qs_page_size='pg_size'):
-    size = request.get(qs_page_size, settings.PAGE_SIZE)
-    page = request.get(qs_page, 1)
+def paginate(cursor, size=None, qs_page='page', qs_page_size='pageSize'):
+    size = request.query.get(qs_page_size, size or settings.PAGE_SIZE)
+    page = request.query.get(qs_page, 1)
 
     paginator = Paginator(cursor, size)
     try:
@@ -124,6 +124,16 @@ def paginate(cursor, qs_page='pg', qs_page_size='pg_size'):
         p = paginator.page(1)
     except EmptyPage:
         p = paginator.page(paginator.num_pages)
+    
+    # extend page further
+    p.current_page_size = size
+    num_pages = p.paginator.num_pages
+    p.paging_numbers = [
+        1,
+        1 if not p.has_previous() else p.previous_page_number(),
+        num_pages if not p.has_next() else p.next_page_number(),
+        num_pages
+    ]   
     return p
 
 
@@ -150,6 +160,10 @@ class Paginator:
 
         def __bool__(self):
             return len(self.object_list) > 0
+        
+        @property
+        def paginator(self):
+            return self.p
 
         @property
         def object_list(self):
@@ -191,7 +205,7 @@ class Paginator:
             return ((self.number - 1) * self.p.page_size) + 1
 
         def end_index(self):
-            return (self.number * self.p.page_size)
+            return min((self.number * self.p.page_size), self.p.count)
 
     def __init__(self, cursor, page_size):
         self.cursor = cursor
