@@ -22,6 +22,8 @@ AUTH_HEADER = {
 
 # pagination
 PAGE_SIZE = 20
+NL_PAGE_SIZE = 100
+XL_PAGE_SIZE = 200
 
 # formats
 FMT_SHORTDATE = '%Y-%m-%d'

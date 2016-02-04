@@ -27,6 +27,8 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li><a href="/projects/">Projects</a></li>
+                    <li><a href="/captures/">Captures</a></li>
+                    <li><a href="/updates/">Updates</a></li>
                 % if not authnz.user_is_anonymous and authnz.current_user.role == 'admin':
                     <li><a href="/admin/">Admin</a></li>
                 % end

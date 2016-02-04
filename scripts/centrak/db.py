@@ -170,11 +170,29 @@ class CaptureBase:
                          ['rseq', pymongo.ASCENDING]))
         return utils.paginate(cur) if paginate else cur
 
-    def get_by_project(self, pjt_id, paginate=True):
+    def get_by_project(self, project_id, paginate=True):
         cur = self.db\
-                  .find({'project_id': pjt_id})\
+                  .find({'project_id': project_id})\
                   .sort('date_created', pymongo.DESCENDING)
         return utils.paginate(cur) if paginate else cur
+
+    def query(self, project_id=None, form_id=None, include_inactive=False,
+                paginate=True, **params):
+        qry = {}
+        if project_id:
+            qry.update({'project_id': project_id})
+        if form_id:
+            qry.update({'_xform_id_string': form_id})
+        if not include_inactive:
+            # qry.update({'active': {'$exists': True}})
+            pass
+
+        cur = self.db\
+                  .find(qry)\
+                  .sort((['datetime_today', pymongo.DESCENDING],
+                         ['group', pymongo.ASCENDING],
+                         ['rseq', pymongo.ASCENDING]))
+        return utils.paginate(cur, size=settings.NL_PAGE_SIZE) if paginate else cur
 
     def save_many(self, records):
         self.db\

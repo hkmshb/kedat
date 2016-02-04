@@ -16,16 +16,20 @@
 /* Set width on the form input elements since they're 100% wide by default */
 input,
 select,
+button,
 textarea {
     font-size: 13px;
-    max-width: 280px;
 }
 
 .btn,
 .form-control {
-    padding: 3px 5px;
-    line-height: 22px;
+    margin: 0px;
     height: 30px;
+    line-height: 22px;
+}
+
+.form-control {
+    padding: 3px 5px;
 }
 
 /* styles for validation helpers */
@@ -218,4 +222,47 @@ li.separator > span {
     margin-top: 13px;
     padding-left: 0px; 
     padding-right: 0px;
+}
+
+.capture-list {
+    font-size: 12px;
+    padding-bottom: 0px;
+}
+
+.form-search {
+    border: solid 1px #ddd;
+    border-radius: 4px 4px 0 0;
+    border-bottom: none;
+    padding: 5px 10px;
+}
+
+/* pagination */
+.pagination-packed {
+    padding-top: 2px;
+    font-size: 10pt;
+}
+
+.pagination-packed .summary {
+    float: left !important;
+}
+
+.pagination-packed .controls {
+    float: right !important;
+}        
+
+.pagination-packed select {
+    display: inline;
+    width: 70px;
+}
+
+.pagination-packed input[type=number] {
+    padding: 1px;
+    margin: 1px;
+    display: inline-block;
+    width: 50px;
+}
+        
+.pagination-packed span {
+    margin-top: -5px;
+    padding: 3px 7px;
 }
