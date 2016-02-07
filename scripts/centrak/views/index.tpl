@@ -113,8 +113,7 @@
 <script src="/static/js/select2.full.min.js"></script>
 <script>
     (function($) {
-        $(function(){
-           index_page(); 
+        $(function(){ 
            $('[name=project_id]').select2();
            $('.date-input').datepicker({
                     format: "dd/mm/yyyy", clearBtn: true,

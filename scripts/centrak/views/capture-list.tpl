@@ -5,12 +5,14 @@
 
 <div class="form-search">
     <div class="row">
-        <div class="col-md-offset-8 col-md-4">
-            <form class="form-inline">
+        <div class="col-md-8"><span class="h4">{{ title }}</span></div>
+        <div class="col-md-4">
+            <form class="form-inline" method="get">
                 <div class="input-group">
-                    <input type="text" name="q" class="form-control" placeholder="Quick Search" />
+                    <input type="text" name="q" class="form-control" placeholder="Quick Search"
+                           value="{{ search_text or '' }}" />
                     <div class="input-group-btn">
-                        <button type="button" class="btn btn-default">
+                        <button type="submit" class="btn btn-default">
                             <i class="glyphicon glyphicon-search"></i>
                         </button>
                     </div>
@@ -65,7 +67,16 @@
       </form>
     </div>
 </div>
+% include('filter-panel.tpl', q=filter_params)
 % def scripts():
     <script src="/static/js/datatable.js"></script>
+    <script type="text/javascript">
+        App.filterCapture();
+        $('.input-group.date').datepicker({
+                format: "yyyy-mm-dd", clearBtn: true,
+                autoclose: true, toggleActive: true,
+                todayHighlight: true,           
+            });
+    </script>
 % end
 % rebase('layout.tpl', title=title, year=year, extra_scripts=scripts)

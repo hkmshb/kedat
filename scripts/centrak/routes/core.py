@@ -185,23 +185,58 @@ def report_default():
 @route('/captures/')
 @view('capture-list')
 def capture_list(item_id=None):
-    # handle query parameters here
-
-    # data to retrieve
-    page = db.Capture.query(paginate=True)
-    return {
-        'title': 'Captures',
-        'records': page
-    }
+    return _query_capture(
+        tbl = db.Capture,
+        title = 'Captures',
+        item_id = item_id
+    )
 
 
 @route('/updates/<item_id>/')
 @route('/updates/')
 @view('capture-list')
 def update_list(item_id=None):
-    # data to retrieve
-    page = db.Update.query(paginate=True)
-    return {
-        'title': 'Updates',
-        'records': page
-    }
+    return _query_capture(
+        tbl=db.Update,
+        title='Updates',
+        item_id=item_id
+    )
+
+
+def _query_capture(tbl, title, item_id):
+    if not item_id:
+        # handle query parameters here
+        query, q = {}, request.query.get('q')
+        if q:
+            search = {'$regex': '.*%s.*' % q, '$options':'i'}
+            query = {'$or': [
+                {'enum_id': search },
+                {'rseq': search },
+                {'cust_name': search },
+                {'acct_status': search},
+                {'acct_no': search},
+                {'tariff': search},
+                {'meter_type': search},
+                {'datetime_today': search},
+            ]}
+        else:
+            query = {}
+            fields = ['datetime_today','enum_id','rseq','acct_status','acct_no',
+                      'meter_status','meter_type']
+            for f in fields:
+                entry = request.query.get(f, None)
+                if entry:
+                    query[f] = {'$regex': '.*%s.*' % entry, '$options':'i'}
+
+        # data to retrieve
+        page = tbl.query(paginate=True, **query)
+        return {
+            'title': title,
+            'records': page,
+            'search_text': q,
+            'filter_params': _(query),
+            'acct_status_choices': db.acct_status_choices,
+            'meter_type_choices': db.meter_type_choices,
+            'meter_status_choices': db.meter_status_choices,
+            'tariff_choices': db.tariff_choices,
+        }
