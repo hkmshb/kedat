@@ -26,6 +26,8 @@ textarea {
     margin: 0px;
     height: 30px;
     line-height: 22px;
+    padding-top: 3px;
+    padding-bottom: 3px;
 }
 
 .form-control {
@@ -236,6 +238,10 @@ li.separator > span {
     padding: 5px 10px;
 }
 
+.report-form .btn {
+    padding: 3px 4px;
+}
+
 /* pagination */
 .pagination-packed {
     padding-top: 2px;
@@ -267,6 +273,7 @@ li.separator > span {
     padding: 3px 7px;
 }
 
+/* filter panel */
 .filter-panel {
     position: fixed;
     right: -250px;
@@ -292,7 +299,7 @@ li.separator > span {
     width: 30px;
     height: 30px;
     line-height: 30px;
-    font-size: 18px;
+    font-size: 14px;
     color: #333;
     background: #FFF none repeat scroll 0% 0%;
     border-radius: 4px 0px 0px 4px;

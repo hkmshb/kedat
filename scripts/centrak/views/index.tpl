@@ -88,7 +88,7 @@
                         </select>
                     </div>
                     <div class="form-group" style="margin-top:3px;">
-                        <div class="input-group date pull-left" style="width: 133px;">
+                        <div class="input-group date pull-left">
                             <input type="text" class="form-control" placeholder="dd/mm/yyyy"
                                    required="" disabled="" value="{{report_ref_date.strftime('%d/%m/%Y')}}">
                                 <span class="input-group-addon btn" style="border-radius: 0 4px 4px 0;">
@@ -97,7 +97,7 @@
                             </input>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="margin-top:3px;">Generate Report</button>
+                    <button type="submit" class="btn btn-primary" style="margin-top:3px; font-size:13px;">Generate Report</button>
                     <input type="hidden" name="ref_date" value="{{ report_ref_date.strftime('%Y-%m-%d')}}" />
                 </form>
             </div>

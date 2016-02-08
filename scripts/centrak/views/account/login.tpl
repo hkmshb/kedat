@@ -20,7 +20,7 @@
             margin: 20px auto 100px;
         }
         h3 { text-align: center; }
-        .btn-login { width: 93%; }
+        .btn-login { width: 100%; }
     </style>
 % end
 % rebase("layout.tpl", title=title, year=year, extra_head=head)
