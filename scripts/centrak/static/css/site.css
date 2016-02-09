@@ -186,7 +186,7 @@ input[type="checkbox"].input-validation-error {
 .panel-menu .list-group-item {
     border-left-width: 5px;
     border-left-color: none;
-    border-top-color: #fff;
+    border-bottom-color: #ddd;
 }
 
 .panel-menu .list-group-item.active,
@@ -200,12 +200,13 @@ input[type="checkbox"].input-validation-error {
 .panel-menu .list-group-item.active:first-child {
     border-radius: 0;
     border-top-color: #fff;
-    border-bottom-color: #ddd;
+    border-bottom-color: #fff;
 }
 
 .panel-menu .list-group-item.active:hover {
     background-color: #eee;
     border-top-color: #ddd;
+    border-bottom-color: #ddd;
     font-weight: bold;
 }
 

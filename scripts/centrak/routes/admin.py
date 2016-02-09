@@ -156,3 +156,100 @@ def xforms_update():
         session['messages']['pass'].append('%s XForm(s) Updated.' % len(updated))
         session.save()
     return redirect('/admin/xforms/')
+
+
+@route('/admin/feeders/')
+@view('admin/feeders')
+@authorize(role='moderator')
+def feeders():
+    feeders = db.Feeder.get_all(include_inactive=True)
+    return {
+        'title': 'Feeders', 'records': feeders,
+    }
+
+
+@route('/admin/feeders/<code>/')
+@view('admin/feeder-view')
+@authorize(role='moderator')
+def feeder_view(code):
+    def get_vratio_display(vratio):
+        for i, text in db.Volt.CHOICES:
+            if vratio == str(i):
+                return text
+        return None
+
+    feeder = db.Feeder.get_by_code(code)
+    stations = db.Station.get_by_feeder(code)
+    return {
+        'title': 'Feeder',
+        'feeder': feeder,
+        'stations': stations,
+        'get_vratio_display': get_vratio_display
+    }
+
+
+@route('/admin/feeders/create', method=['GET', 'POST'])
+@route('/admin/feeders/<code>/edit', method=['GET', 'POST'])
+@view('admin/feeder-form')
+@authorize(role='moderator')
+def manage_feeder(code=None):
+    feeder = _() if not code else db.Feeder.get_by_code(code)
+    if code and not feeder:
+        raise HTTPError(404, "Feeder not found: %s" % id)
+
+    session = get_session()        
+    if request.method == 'POST':
+        form = forms.FeederForm(request)
+        try:
+            if form.is_valid():
+                form.save()
+                action = ('created' if not code else 'updated')
+                session['messages']['pass'].append('Feeder %s' % action)
+            else:
+                session['messages']['fail'].extend(form.errors)
+
+            return redirect('/admin/feeders/')
+        except pymongo.errors.DuplicateKeyError:
+            session['messages']['fail'].append("Provided Feeder Code and/or Name already exists.")
+            feeder = form._instance
+
+    return {
+        'title':'Projects',
+        'feeder': feeder,
+    }
+
+
+@route('/admin/feeders/<feeder_code>/station/create', method=['GET','POST'])
+@route('/admin/feeders/<feeder_code>/station/<code>/', method=['GET','POST'])
+@view('admin/station-form')
+@authorize(role='moderator')
+def manage_station(feeder_code, code=None):
+    feeder = db.Feeder.get_by_code(feeder_code)
+    if not feeder:
+        raise HTTPError(404, "Feeder not found: %s" % feeder_code)
+
+    station = _() if not code else db.Station.get_by_code(code)
+    if code and not station:
+        raise HTTPError(404, "Station not found: %s" % code)
+
+    session = get_session()['messages']
+    if request.method == 'POST':
+        form = forms.StationForm(request)
+        try:
+            if form.is_valid():
+                form.save()
+                action = ('created' if not code else 'updated')
+                session['pass'].append('Station %s' % action)
+            else:
+                session['fail'].extend(form.errors)
+            return redirect('/admin/feeders/%s/' % feeder_code)
+        except pymongo.errors.DuplicateKeyError:
+            session['fail'].append("Provided Station Code already exists.")
+            station = form._instance
+    
+    return {
+        'title': 'Station',
+        'station': station,
+        'feeder': feeder,
+        'vratio_choices': db.Volt.CHOICES,
+    }

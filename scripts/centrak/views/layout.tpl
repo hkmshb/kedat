@@ -6,6 +6,8 @@
     <title>{{ title }} - CENTrak</title>
     <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-datepicker3.min.css" />
+    <link rel="stylesheet" type="text/css" href="/static/css/select2.min.css" />
+    <link rel="stylesheet" type="text/css" href="/static/css/select2-bootstrap.css" />
     <link rel="stylesheet" type="text/css" href="/static/css/site.css" />
     <script src="/static/js/modernizr-2.6.2.js"></script>
     % if defined('extra_head'):
@@ -88,6 +90,7 @@
     <script src="/static/js/jquery-1.10.2.min.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
     <script src="/static/js/bootstrap-datepicker.min.js"></script>
+    <script src="/static/js/select2.full.min.js"></script>
     <script src="/static/js/centrak.js"></script>
     % if defined('extra_scripts'):
         % extra_scripts()

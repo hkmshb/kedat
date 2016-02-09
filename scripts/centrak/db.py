@@ -3,6 +3,7 @@ Data access provider.
 """
 import pymongo
 from datetime import datetime
+from bson.objectid import ObjectId
 
 import utils
 import settings
@@ -55,6 +56,19 @@ tariff_choices = (
     ("L1","L1")
 )
 
+# voltage ratios
+class Volt:
+    MVOLTL_LVOLT = 1
+    MVOLTH_LVOLT = 2
+
+    class Text:
+        MVOLTL_LVOLT = '11/0.415KV'
+        MVOLTH_LVOLT = '33/0.415KV'
+
+    CHOICES = (
+        (MVOLTL_LVOLT, Text.MVOLTL_LVOLT),
+        (MVOLTH_LVOLT, Text.MVOLTH_LVOLT),
+    )
 
 
 class Project:
@@ -263,3 +277,80 @@ class UpdateBase(CaptureBase):
 
 Capture = CaptureBase('captures')
 Update = UpdateBase()
+
+
+class Feeder:
+
+    @staticmethod
+    def count():
+        return db.feeders.count({})
+
+    @staticmethod
+    def get_all(include_inactive=True, paginate=True):
+        qry = {} if include_inactive else {'active': True}
+        cur = db.feeders.find(qry)\
+                .sort('code', pymongo.ASCENDING)
+        return utils.paginate(cur) if paginate else cur
+
+    @staticmethod
+    def get_by_code(code):
+        record = db.feeders.find_one({'code': code.upper()})
+        return _(record or {})
+
+    @staticmethod
+    def insert_one(record):
+        tdy = datetime.today().date().isoformat()
+        record['date_created'] = tdy
+        record['last_modified'] = None
+        return db.feeders\
+                 .insert_one(record)
+     
+    @staticmethod
+    def update_one(record):
+        tdy = datetime.today().date().isoformat()
+        record['last_modified'] = tdy
+        record._id = ObjectId(record._id)
+        return db.feeders\
+                 .update({'_id': record._id}, record)
+
+
+class Station:
+
+    @staticmethod
+    def count():
+        return db.stations.count({})
+
+    @staticmethod
+    def get_all(include_inactive=True, paginate=True):
+        qry = {} if include_inactive else {'active': True}
+        cur = db.stations.find(qry)\
+                .sort('code', pymongo.ASCENDING)
+        return utils.paginate(cur) if paginate else cur
+
+    @staticmethod
+    def get_by_code(code):
+        record = db.stations.find_one({'code': code.upper()})
+        return _(record or {})
+
+    @staticmethod
+    def get_by_feeder(feeder_code, paginate=True):
+        qry = {'source_feeder': feeder_code.upper()}
+        cur = db.stations.find(qry)\
+                .sort('code', pymongo.ASCENDING)
+        return utils.paginate(cur) if paginate else cur
+
+    @staticmethod
+    def insert_one(record):
+        tdy = datetime.today().date().isoformat()
+        record['date_created'] = tdy
+        record['last_modified'] = None
+        return db.stations\
+                 .insert_one(record)
+     
+    @staticmethod
+    def update_one(record):
+        tdy = datetime.today().date().isoformat()
+        record['last_modified'] = tdy
+        record._id = ObjectId(record._id)
+        return db.stations\
+                 .update({'_id': record._id}, record)

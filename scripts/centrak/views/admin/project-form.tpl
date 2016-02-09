@@ -51,16 +51,4 @@
         </form>
     </div>
 </div>
-
-
-% def extra_head():
-    <link rel="stylesheet" type="text/css" href="/static/css/select2.min.css" />
-    <link rel="stylesheet" type="text/css" href="/static/css/select2-bootstrap.css" />
-% end
-% def extra_scripts():
-    <script src="/static/js/select2.full.min.js"></script>
-    <script type="text/javascript">
-        $('.select2').select2();
-    </script>
-% end
-% rebase('admin/base.tpl', title=title, year=year, extra_head=extra_head, extra_scripts=extra_scripts)
+% rebase('admin/base.tpl', title=title, year=year)

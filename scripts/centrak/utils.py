@@ -1,7 +1,7 @@
 ﻿"""
 Defines utility functions and classes.
 """
-import os
+import os, sys
 import pymongo
 from datetime import datetime
 from dateutil import relativedelta as rd
@@ -90,9 +90,12 @@ def make_auth_decorator(cork, username=None, role=None, fixed_role=False,
                 if not cork.user_is_anonymous:
                     redirect_url = fail_auth_redirect
 
-                cork.require(
-                    username=username, role=role, fixed_role=fixed_role,
-                    fail_redirect=redirect_url)
+                
+                if '--debug' not in sys.argv[1:]:
+                    _args = dict(username=username, role=role, 
+                                 fail_redirect=redirect_url,
+                                 fixed_role=fixed_role)
+                    cork.require(**_args)
                 return func(*a, **kw)
             return wrapper
         return decorator
@@ -263,4 +266,16 @@ class MongoDbSetupMiddleware:
                    IndexModel([('acct_status', ASC)]),
                    IndexModel([('cust_mobile1', ASC)])]
         db.captures.create_indexes(indexes)
+
+        # feeders
+        indexes = [IndexModel([('code', ASC)], unique=True),
+                   IndexModel([('name', ASC)], unique=True)]
+        db.feeders.create_indexes(indexes)
+
+        # stations
+        indexes = [IndexModel([('code', ASC)], unique=True),
+                   IndexModel([('type', ASC)]),
+                   IndexModel([('name', ASC), ('source_feeder', ASC)],
+                              unique=True)]
+        db.stations.create_indexes(indexes)
 

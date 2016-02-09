@@ -37,6 +37,9 @@ App = function () {
     'use strict';
     return {
         init: function () {
+            // init all select2
+            $('.select2').select2();
+
             handleActivitySummaryRowToggle(),
             handleThemePanelExpand()
         },

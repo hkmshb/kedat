@@ -1,5 +1,7 @@
 % menus = (('/admin/projects/', 'Projects'),
-%          ('/admin/xforms/', 'XForms'))
+%          ('/admin/xforms/', 'XForms'),
+%          ('/admin/feeders/', 'Feeders'),
+%          ('/admin/stations/', 'Stations'))
 
 <div class="panel panel-flat panel-menu panel-default">
     <ul class="list-group">
