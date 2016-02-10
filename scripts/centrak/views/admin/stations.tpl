@@ -2,10 +2,10 @@
     <div class="panel panel-default">
         <div class="panel-heading">
             <b>{{ title }}</b>
-            % if station_type != 'D':
+            % if station_type == 'X':
             <div class="pull-right">
                 <div style="margin-top: -5px;">
-                    <a href="/admin/stations/create" class="btn btn-default">Add</a>
+                    <a href="/admin/stations/{{ station_type.lower() }}/create" class="btn btn-default">Add</a>
                     <button type="submit" name="del" class="btn btn-danger">Delete</button>
                 </div>
             </div>
@@ -27,8 +27,7 @@
                     <tr><td style="white-space:nowrap;"><a href="/admin/stations/{{ r.code.lower() }}/">{{ r.code }}</a></td>
                         <td>{{ r.name }}</td>
                         <td>{{ r.capacity }}KVA, {{ get_vratio_display(r.vratio) }}</td>
-                        % fdr = get_feeder(r.source_feeder)
-                        <td>{{ fdr.voltage }}KV {{ fdr.name }}</td>
+                        <td>{{ get_feeder_name(r.source_feeder) }}</td>
                         <td>
                             <a href="{{ '/admin/stations/%s/edit' % r.code.lower() }}">
                                 <i class="glyphicon glyphicon-edit"></i>
@@ -44,4 +43,15 @@
         </div>
     </div>
 </form>
-% rebase('admin/base.tpl', title=title, year=year)
+
+% def sub_menus():
+% sub_menus = (('I', 'Injection'), ('D', 'Distribution'))
+<ul class="nav narrow-nav">
+% for sm in sub_menus:
+    <li{{! ' class="active"' if sm[0]==station_type else ''}}>
+        <a href="{{'/admin/stations/%s/' % sm[0].lower() }}">{{ sm[1] }} Stations</a>
+    </li>
+% end
+</ul>    
+% end
+% rebase('admin/base.tpl', title=title, year=year, extra_menu=sub_menus)

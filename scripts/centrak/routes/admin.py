@@ -220,6 +220,39 @@ def manage_feeder(code=None):
     }
 
 
+@route('/admin/stations/<station_type>/')
+@route('/admin/stations/')
+@view('admin/stations')
+@authorize(role='moderator')
+def stations(station_type=None):
+    station_type = station_type.upper() if station_type else 'I'
+    if station_type not in ('I', 'D'):
+        return redirect('/admin/stations/')
+
+    title_prefix, feeder_voltage = 'Injection', '33'
+    if station_type != 'I':
+        title_prefix = 'Distribution'
+        feeder_voltage = '11'
+
+    stations = db.Station.get_by_type(station_type, include_inactive=False)
+    feeders = db.Feeder.get_by_voltage(feeder_voltage, False, False)
+    _cache, _name_format = {}, "%sKV %s"
+
+    def _get_feeder_name(code):
+        if code not in _cache:
+            for f in feeders:
+                _cache[f['code']] = _name_format % (f['voltage'], f['name'])
+        return _cache.get(code, '')
+
+    return {
+        'title': '%s Stations' % title_prefix,
+        'station_type': station_type,
+        'records': stations,            
+        'get_feeder_name': _get_feeder_name,
+        'get_vratio_display': _get_vratio_display,
+    }
+
+
 @route('/admin/feeders/<feeder_code>/station/create', method=['GET','POST'])
 @route('/admin/feeders/<feeder_code>/station/<code>/', method=['GET','POST'])
 @view('admin/station-form')
@@ -261,34 +294,3 @@ def import_station(feeder_code):
     return {
         'title': 'Import Stations'
     }
-
-
-@route('/admin/stations/<station_type>/')
-@route('/admin/stations/')
-@view('admin/stations')
-@authorize(role='moderator')
-def stations(station_type=None):
-    station_type = station_type.upper() if station_type else 'D'
-    if station_type not in ('I', 'D'):
-        return redirect('/admin/stations/')
-    
-    if station_type == 'D':
-        stations = db.Station.get_by_type(station_type, include_inactive=False)
-        feeders = db.Feeder.get_by_voltage('11', False, False)
-        feeder_code_cache = {}
-        print(feeders.count())
-
-        def get_feeder(code):
-            if code not in feeder_code_cache:
-                for f in feeders:
-                    feeder_code_cache[f['code']] = _(f)
-            return feeder_code_cache.get(code, _())
-
-        return {
-            'title': 'Distribution Stations',
-            'station_type': station_type,
-            'records': stations,            
-            'get_feeder': get_feeder,
-            'get_vratio_display': _get_vratio_display,
-        }
-

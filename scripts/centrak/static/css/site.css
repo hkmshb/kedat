@@ -350,3 +350,24 @@ li.separator > span {
     padding-right: 10px;
     font-weight: normal;
 }
+
+.narrow-nav li > a {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    border-left: solid 1px #ddd;
+    border-right: solid 1px #ddd;
+    border-bottom: solid 1px #ddd;
+}
+
+.narrow-nav li:first-child a {
+    border-top: solid 1px #ddd;
+}
+
+.narrow-nav li.active {
+    border-left: solid 5px #bbb;
+}
+
+.narrow-nav li:not(.active) a {
+    padding-left: 20px;
+}
+
