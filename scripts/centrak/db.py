@@ -92,6 +92,7 @@ class Project:
     @staticmethod
     def insert_one(record):
         tdy = datetime.today().date().isoformat()
+        record['active'] = True
         record['date_created'] = tdy
         record['last_modified'] = None
         return db.projects\
@@ -298,8 +299,18 @@ class Feeder:
         return _(record or {})
 
     @staticmethod
+    def get_by_voltage(voltage, include_inactive=False, paginate=True):
+        qry = {'voltage': voltage}
+        if not include_inactive:
+            qry.update({'active': True})
+        cur = db.feeders.find(qry)\
+                .sort('code', pymongo.ASCENDING)
+        return utils.paginate(cur) if paginate else cur
+
+    @staticmethod
     def insert_one(record):
         tdy = datetime.today().date().isoformat()
+        record['active'] = True
         record['date_created'] = tdy
         record['last_modified'] = None
         return db.feeders\
@@ -340,8 +351,18 @@ class Station:
         return utils.paginate(cur) if paginate else cur
 
     @staticmethod
+    def get_by_type(station_type, include_inactive=False, paginate=True):
+        qry = {'type': station_type.upper()}
+        if not include_inactive:
+            qry.update({'active':True})
+        cur = db.stations.find(qry)\
+                .sort('code', pymongo.ASCENDING)
+        return utils.paginate(cur) if paginate else cur
+
+    @staticmethod
     def insert_one(record):
         tdy = datetime.today().date().isoformat()
+        record['active'] = True
         record['date_created'] = tdy
         record['last_modified'] = None
         return db.stations\

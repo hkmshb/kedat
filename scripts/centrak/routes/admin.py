@@ -13,6 +13,13 @@ import db, forms
 
 
 
+def _get_vratio_display(vratio_id):
+    for i, text in db.Volt.CHOICES:
+        if vratio_id == str(i):
+            return text
+    return None
+
+
 @route('/admin/')
 @view('admin/index')
 @authorize(role='moderator')
@@ -172,19 +179,13 @@ def feeders():
 @view('admin/feeder-view')
 @authorize(role='moderator')
 def feeder_view(code):
-    def get_vratio_display(vratio):
-        for i, text in db.Volt.CHOICES:
-            if vratio == str(i):
-                return text
-        return None
-
     feeder = db.Feeder.get_by_code(code)
     stations = db.Station.get_by_feeder(code)
     return {
         'title': 'Feeder',
         'feeder': feeder,
         'stations': stations,
-        'get_vratio_display': get_vratio_display
+        'get_vratio_display': _get_vratio_display
     }
 
 
@@ -260,3 +261,34 @@ def import_station(feeder_code):
     return {
         'title': 'Import Stations'
     }
+
+
+@route('/admin/stations/<station_type>/')
+@route('/admin/stations/')
+@view('admin/stations')
+@authorize(role='moderator')
+def stations(station_type=None):
+    station_type = station_type.upper() if station_type else 'D'
+    if station_type not in ('I', 'D'):
+        return redirect('/admin/stations/')
+    
+    if station_type == 'D':
+        stations = db.Station.get_by_type(station_type, include_inactive=False)
+        feeders = db.Feeder.get_by_voltage('11', False, False)
+        feeder_code_cache = {}
+        print(feeders.count())
+
+        def get_feeder(code):
+            if code not in feeder_code_cache:
+                for f in feeders:
+                    feeder_code_cache[f['code']] = _(f)
+            return feeder_code_cache.get(code, _())
+
+        return {
+            'title': 'Distribution Stations',
+            'station_type': station_type,
+            'records': stations,            
+            'get_feeder': get_feeder,
+            'get_vratio_display': _get_vratio_display,
+        }
+
