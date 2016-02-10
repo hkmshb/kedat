@@ -12,7 +12,11 @@
         <div class="panel-body">
             <table class="table panel-table">
                 <thead>
-                    <tr><th>Code</th><th>Voltage</th><th>Name</th></tr>
+                    <tr><th style="width:150px;">Code</th>
+                        <th style="width:150px;">Voltage</th>
+                        <th style="width:65%;">Name</th>
+                        <th></th>
+                    </tr>
                 </thead>
                 <tbody>
                 % if records:
@@ -20,6 +24,11 @@
                     <tr><td style="white-space:nowrap;"><a href="/admin/feeders/{{ r.code.lower() }}/">{{ r.code }}</a></td>
                         <td>{{ r.voltage }}KV</td>
                         <td>{{ r.name }}</td>
+                        <td>
+                            <a href="{{ '/admin/feeders/%s/edit' % r.code.lower() }}">
+                                <i class="glyphicon glyphicon-edit"></i>
+                            </a>
+                        </td>
                     </tr>
                     % end
                 % else:

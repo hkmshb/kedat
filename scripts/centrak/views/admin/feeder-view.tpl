@@ -19,6 +19,7 @@
         <div class="pull-right">
             <div style="margin-top: -5px;">
                 <a href="{{ '/admin/feeders/%s/station/create' % feeder.code.lower() }}" class="btn btn-default">Add</a>
+                <a href="{{ '/admin/feeders/%s/station/import' % feeder.code.lower() }}" class="btn btn-default">Import</a>
                 <button type="submit" name="del" class="btn btn-danger">Delete</button>
             </div>
         </div>

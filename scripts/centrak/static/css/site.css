@@ -344,3 +344,9 @@ li.separator > span {
 .m-t-10 {
     margin-top: 10px !important;
 }
+
+.narrow-labels tr:first-child label {
+    padding-top: 7px;
+    padding-right: 10px;
+    font-weight: normal;
+}

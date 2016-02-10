@@ -253,3 +253,10 @@ def manage_station(feeder_code, code=None):
         'feeder': feeder,
         'vratio_choices': db.Volt.CHOICES,
     }
+
+@route('/admin/feeders/<feeder_code>/station/import', method=['GET', 'POST'])
+@view('admin/station-import')
+def import_station(feeder_code):
+    return {
+        'title': 'Import Stations'
+    }
