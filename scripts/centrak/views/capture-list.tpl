@@ -69,7 +69,6 @@
 </div>
 % include('filter-panel.tpl', q=filter_params)
 % def scripts():
-    <script src="/static/js/datatable.js"></script>
     <script type="text/javascript">
         App.filterCapture();
         $('.input-group.date').datepicker({

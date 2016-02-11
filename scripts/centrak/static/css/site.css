@@ -200,7 +200,6 @@ input[type="checkbox"].input-validation-error {
 .panel-menu .list-group-item.active:first-child {
     border-radius: 0;
     border-top-color: #fff;
-    border-bottom-color: #fff;
 }
 
 .panel-menu .list-group-item.active:hover {
@@ -371,3 +370,10 @@ li.separator > span {
     padding-left: 20px;
 }
 
+.panel-fitted {
+    padding-bottom: 0px;
+}
+
+.panel-fitted .table {
+    margin-bottom: 5px;
+}

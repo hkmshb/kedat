@@ -8,7 +8,7 @@ import pymongo
 from kedat.core import Storage as _
 from routes import authnz, authorize
 from utils import view, get_session
-from services import api
+from services import api, imxport
 import db, forms
 
 
@@ -175,6 +175,7 @@ def feeders():
     }
 
 
+@route('/admin/feeders/<code>/stations/')
 @route('/admin/feeders/<code>/')
 @view('admin/feeder-view')
 @authorize(role='moderator')
@@ -253,8 +254,8 @@ def stations(station_type=None):
     }
 
 
-@route('/admin/feeders/<feeder_code>/station/create', method=['GET','POST'])
-@route('/admin/feeders/<feeder_code>/station/<code>/', method=['GET','POST'])
+@route('/admin/feeders/<feeder_code>/stations/create', method=['GET','POST'])
+@route('/admin/feeders/<feeder_code>/stations/<code>/', method=['GET','POST'])
 @view('admin/station-form')
 @authorize(role='moderator')
 def manage_station(feeder_code, code=None):
@@ -288,9 +289,27 @@ def manage_station(feeder_code, code=None):
         'vratio_choices': db.Volt.CHOICES,
     }
 
-@route('/admin/feeders/<feeder_code>/station/import', method=['GET', 'POST'])
+
+@route('/admin/feeders/<feeder_code>/stations/import', method=['GET', 'POST'])
 @view('admin/station-import')
 def import_station(feeder_code):
+    feeder = db.Feeder.get_by_code(feeder_code)
+    if not feeder:
+        raise HTTPError(404, "Feeder not found: %s" % feeder_code)
+
+    session = get_session()['messages']
+    if request.method == 'POST':
+        form = forms.StationImportForm(request, '.csv')
+        if form.is_valid():
+            result = imxport.feeder_stations(feeder, form._instance.impfile)
+            if not result.errors:
+                session['pass'].append(result.summary())
+            else:
+                session['fail'].extend(result.errors)
+            return redirect('/admin/feeders/%s/stations/' % feeder_code)
+        else:
+            session['fail'].extend(form.errors)
+
     return {
-        'title': 'Import Stations'
+        'title': 'Import Feeder Stations'
     }

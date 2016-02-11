@@ -1,6 +1,8 @@
 <div class="panel panel-default">
     % is_new = (True if not station._id else False)
-    <div class="panel-heading">{{ "Create" if is_new else "Update" }} Station</div>
+    <div class="panel-heading">
+        <b>{{ "Create" if is_new else "Update" }} Station</b>
+    </div>
     <div class="panel-body">
         <form method="post" class="form-horizontal">
             <div class="form-group">
@@ -39,6 +41,14 @@
                         <option value="{{ i[0] }}" {{'selected=""' if station.vratio == str(i[0]) else ''}}>{{ i[1] }}</option>
                         % end
                     </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-6">
+                    <label for="id_public" class="item-title">
+                        % on = 'checked' if station.public else ''
+                        <input type="checkbox" id="id_public" name="public" {{ on }} /> Is Public
+                    </label>
                 </div>
             </div>
             <div class="form-group">

@@ -1,4 +1,4 @@
-<form method="post">
+<form method="post" data-bind="table" data-paging-numbers="{{ records.paging_numbers }}">
     <div class="panel panel-default">
         <div class="panel-heading">
             <b>{{ title }}</b>
@@ -11,8 +11,8 @@
             </div>
             % end
         </div>
-        <div class="panel-body">
-            <table class="table panel-table">
+        <div class="panel-body panel-fitted">
+            <table class="table table-condensed table-striped table-hover panel-table">
                 <thead>
                     <tr><th style="width:150px;">Code</th>
                         <th style="width:400px;">Name</th>
@@ -36,9 +36,14 @@
                     </tr>
                     % end
                 % else:
-                    <tr><td colspan="2">No data available.</td></tr>
+                    <tr><td colspan="5">No data available.</td></tr>
                 % end
                 </tbody>
+                <tfoot>
+                    <tr><td colspan="5">
+                        % include('table-footer.tpl', p=records)
+                        </td></tr>
+                </tfoot>
             </table>
         </div>
     </div>

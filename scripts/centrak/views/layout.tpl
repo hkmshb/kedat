@@ -92,6 +92,7 @@
     <script src="/static/js/bootstrap-datepicker.min.js"></script>
     <script src="/static/js/select2.full.min.js"></script>
     <script src="/static/js/centrak.js"></script>
+    <script src="/static/js/datatable.js"></script>
     % if defined('extra_scripts'):
         % extra_scripts()
     % end
