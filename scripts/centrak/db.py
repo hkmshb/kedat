@@ -332,6 +332,11 @@ class Station:
         return db.stations.count({})
 
     @staticmethod
+    def count_by_feeder(feeder_code):
+        return db.stations\
+                 .count({'source_feeder': feeder_code.upper()})
+
+    @staticmethod
     def get_all(include_inactive=True, paginate=True):
         qry = {} if include_inactive else {'active': True}
         cur = db.stations.find(qry)\

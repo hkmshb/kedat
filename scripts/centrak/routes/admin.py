@@ -171,7 +171,9 @@ def xforms_update():
 def feeders():
     feeders = db.Feeder.get_all(include_inactive=True)
     return {
-        'title': 'Feeders', 'records': feeders,
+        'title': 'Feeders', 
+        'records': feeders,
+        'get_station_count': db.Station.count_by_feeder
     }
 
 
