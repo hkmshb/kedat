@@ -221,21 +221,21 @@ def manage_feeder(code=None):
     }
 
 
-@route('/admin/stations/<station_type>/')
+@route('/admin/stations/<category>/')
 @route('/admin/stations/')
 @view('admin/stations')
 @authorize(role='moderator')
-def stations(station_type=None):
-    station_type = station_type.upper() if station_type else 'I'
-    if station_type not in ('I', 'D'):
+def stations(category=None):
+    category = category.upper() if category else 'I'
+    if category not in ('I', 'D'):
         return redirect('/admin/stations/')
 
     title_prefix, feeder_voltage = 'Injection', '33'
-    if station_type != 'I':
+    if category != 'I':
         title_prefix = 'Distribution'
         feeder_voltage = '11'
 
-    stations = db.Station.get_by_type(station_type, include_inactive=False)
+    stations = db.Station.get_by_category(category, include_inactive=False)
     feeders = db.Feeder.get_by_voltage(feeder_voltage, False, False)
     _cache, _name_format = {}, "%sKV %s"
 
@@ -247,7 +247,7 @@ def stations(station_type=None):
 
     return {
         'title': '%s Stations' % title_prefix,
-        'station_type': station_type,
+        'station_type': category,
         'records': stations,            
         'get_feeder_name': _get_feeder_name,
         'get_vratio_display': _get_vratio_display,

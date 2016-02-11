@@ -351,8 +351,17 @@ class Station:
         return utils.paginate(cur) if paginate else cur
 
     @staticmethod
-    def get_by_type(station_type, include_inactive=False, paginate=True):
-        qry = {'type': station_type.upper()}
+    def get_by_category(category, include_inactive=False, paginate=True):
+        qry = {'category': category.upper()}
+        if not include_inactive:
+            qry.update({'active':True})
+        cur = db.stations.find(qry)\
+                .sort('code', pymongo.ASCENDING)
+        return utils.paginate(cur) if paginate else cur
+
+    @staticmethod
+    def get_by_type(is_public, include_inactive=False, paginate=True):
+        qry = {'public': is_public}
         if not include_inactive:
             qry.update({'active':True})
         cur = db.stations.find(qry)\
