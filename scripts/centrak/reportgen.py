@@ -6,14 +6,17 @@ import argparse
 from datetime import datetime
 
 import pandas as pd
-import db
 
 
 BASE_DIR = os.path.dirname(__file__)
 REPORT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', '..', '..', '_reports'))
 
-rpt_cols = ['rseq', 'enum_id', 'cust_name', 'addy_house_no', 'addy_street',
-            'acct_status', 'acct_no', 'current']
+sys.path.append(os.path.join(BASE_DIR, '..', '..'))
+import db
+
+
+rpt_cols = ['datetime_today', 'rseq', 'enum_id', 'cust_name', 'addy_no', 'addy_street',
+            'acct_status', 'acct_no', 'tariff']
 
 def get_duplicate_rseqs(df):
     key = 'rseq'
@@ -54,48 +57,35 @@ def get_invalid_stations(df, codes):
     for col in ([key] + rpt_cols):
         records[col] = records[col].apply(lambda x: str(x).upper())
     return records
-   
 
-def run(args, target_dir, date_digits):
-    captures = db.Capture.get_by_date(args.ref_date, False)
+
+def get_records_by_upriser(upriser_code):
+    query = {'rseq': {'$regex': '.*%s/*' % upriser_code, '$options':'i' }}
+    captures = db.Capture.query(paginate=False, **query)
     df = pd.DataFrame(list(captures))
 
-    filename = os.path.join(target_dir, ('error-rpt-%s.xls' % date_digits))
-    writer = pd.ExcelWriter(filename)
+    result = df[rpt_cols]
+    result = result.sort(['rseq'], ascending=[1])
+    return result
+ 
 
-    print('Generating Reports for: %s' % args.ref_date)
-    if args.dup_rseq or args.all:
-        print('compiling duplicate rseq records...')
-        try:
-            result = get_duplicate_rseqs(df)
-            sheet_name = 'duplicate-rseq'
-            result.to_excel(writer, sheet_name=sheet_name)
-            print('sucess: records written\r\n')
-        except Exception as ex:
-            print('fail: %s\r\n' % str(ex))
+def run(args, target_dir):
+    records, report_title = None, None
+    if args.upriser:
+        print('Generating report...')
+        name_fmt = 'captures-by-upriser-%s.xls'
+        report_title = name_fmt % args.upriser.replace('/','_')
+        records = get_records_by_upriser(args.upriser)
 
-    if args.dup_acct or args.all:
-        print('compiling duplicate acct records...')
-        try:
-            result = get_duplicate_accts(df)
-            sheet_name = 'duplicate-acct'
-            result.to_excel(writer, sheet_name=sheet_name)
-            print('success: records written\r\n')
-        except Exception as ex:
-            print('failed: %s\r\n' % str(ex))
-    
-    if args.invalid_station or args.all:
-        print('compiling invalid station records...')
-        try:                                                                    
-            result = get_invalid_stations(df, args.invalid_station)
-            sheet_name = 'invalid-stations'
-            result.to_excel(writer, sheet_name=sheet_name)
-            print('success: records written\r\n')
-        except Exception as ex:
-            print('failed: %s\r\n' % str(ex))
-    
-    # flush all writes to disk
-    writer.save()
+
+    # write out file
+    if records.index.size > 0:
+        filename = os.path.join(target_dir, report_title)
+        writer = pd.ExcelWriter(filename)
+
+        records.to_excel(writer)
+        writer.save()
+        print('success: report written')
 
 
 
@@ -103,18 +93,11 @@ if __name__ == '__main__':
     # define parser
     parser = argparse.ArgumentParser(description="Report Generation Script")
     add = parser.add_argument
-    add('-d', '--ref-date', nargs='?', default=datetime.now().date().isoformat(),
-        help="Date for which to produce report")
-    add('--dup-rseq', action='store_true',
-        help="Product duplicate route-sequence report")
-    add('--dup-acct', action='store_true', help="Produce duplicate accounts report")
-    add('--invalid-station', nargs='*', help="Product invalid station report")
-    add('-a', '--all', action='store_true', help="Product all forms of report")
-
-    args = parser.parse_args()
-    date_digits = args.ref_date.replace('-','')
+    add('-u', '--upriser', help="Upriser code")
 
     if not os.path.exists(REPORT_DIR):
         os.makedirs(REPORT_DIR)
-            
-    run(args, REPORT_DIR, date_digits)
+    
+    args = parser.parse_args()            
+    run(args, REPORT_DIR)
+
