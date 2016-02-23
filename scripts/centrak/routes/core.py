@@ -12,6 +12,7 @@ from utils import get_session, write_log, get_weekdate_bounds, view,\
 from services import api, stats, transform, report
 from settings import FMT_SHORTDATE, NL_PAGE_SIZE
 from routes import authnz, authorize
+from forms import CaptureForm
 
 
 
@@ -181,25 +182,45 @@ def report_default():
     return redirect('/')
 
 
-@route('/captures/<item_id>/')
 @route('/captures/')
 @view('capture-list')
-def capture_list(item_id=None):
+def capture_list():
     return _query_capture(
         tbl = db.Capture,
         title = 'Captures',
-        item_id = item_id
+        item_id=None,
     )
 
 
-@route('/updates/<item_id>/')
+@route('/captures/<item_id:int>/')
+@view('capture-view')
+def capture_list(item_id):
+    result = _query_capture(
+        tbl = db.Capture,
+        title = 'Capture Item',
+        item_id=item_id,
+    )
+    result['form'] = CaptureForm(request)
+    return result
+
+
 @route('/updates/')
 @view('capture-list')
-def update_list(item_id=None):
+def update_list():
     return _query_capture(
         tbl=db.Update,
         title='Updates',
-        item_id=item_id
+        item_id=None
+    )
+
+
+@route('/updates/<item_id:int>/')
+@view('capture-view')
+def update_view(item_id):
+    return _query_capture(
+        tbl=db.Capture,
+        title='Capture Item',
+        item_id=item_id,
     )
 
 
@@ -239,4 +260,11 @@ def _query_capture(tbl, title, item_id):
             'meter_type_choices': db.meter_type_choices,
             'meter_status_choices': db.meter_status_choices,
             'tariff_choices': db.tariff_choices,
+        }
+    else:
+        query = {}
+        record = tbl.get(item_id)
+        return {
+            'title': title,
+            'record': record,
         }

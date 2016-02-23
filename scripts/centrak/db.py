@@ -207,6 +207,14 @@ class CaptureBase:
         return self.db\
                    .count({'_xform_id_string': ref_id})
 
+    def get(self, _id):
+        record = self.db.find_one({'_id': _id})
+        return _(record or {})
+
+    def get_by_rseq(self, rseq):
+        record = self.db.find_one({'rseq': rseq})
+        return _(record or {})
+
     def get_by_date(self, ref_date, paginate=True):
         cur = self.db\
                   .find({'datetime_today': ref_date})\
