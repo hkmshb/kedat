@@ -166,8 +166,8 @@ class CaptureForm(FormBase):
                 ('addy_no','House #'), 
                 ('addy_street','Street'), 
                 ('addy_town_city','Town/City'),
-                ('addy_lga','LGA'), 
                 ('addy_state','State'), 
+                ('addy_lga','LGA'), 
                 ('addy_landmark','Closest Landmark'), 
                 ('gps','GPS')])),
             ('customer', OrderedDict([

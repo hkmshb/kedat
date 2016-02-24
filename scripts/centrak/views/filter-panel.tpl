@@ -37,7 +37,7 @@
                 <div class="col-md-5 control-label">Account Status</div>
                 <div class="col-md-7">
                     <select name="acct_status" class="form-control input-sm">
-                        <option value="">&lt;Select One&gt;</option>
+                        <option value="">&laquo; Select One &raquo;</option>
                     % for item in acct_status_choices:
                         <option value="{{ item[0] }}" {{ selected(q.acct_status, item[0]) }}>{{ item[1] }}</option>
                     % end
@@ -55,7 +55,7 @@
                 <div class="col-md-5 control-label">Meter Status</div>
                 <div class="col-md-7">
                     <select name="meter_status" class="form-control input-sm" placeholder="Select Meter Status">
-                        <option value="">&lt;Select One&gt;</option>
+                        <option value="">&laquo; Select One &raquo;</option>
                     % for item in meter_status_choices:
                         <option value="{{ item[0] }}" {{ selected(q.meter_status, item[0]) }}>{{ item[1] }}</option>
                     % end
@@ -66,7 +66,7 @@
                 <div class="col-md-5 control-label">Meter Type</div>
                 <div class="col-md-7">
                     <select name="meter_type" class="form-control input-sm">
-                        <option value="">&lt;Select One&gt;</option>
+                        <option value="">&laquo; Select One &raquo;</option>
                     % for item in meter_type_choices:
                         <option value="{{ item[0] }}" {{ selected(q.meter_type, item[0]) }}>{{ item[1] }}</option>
                     % end

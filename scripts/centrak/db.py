@@ -16,46 +16,6 @@ conn = pymongo.MongoClient()
 db = conn.centrak
 
 
-## choices
-acct_status_choices = (
-    ("unknown",         "Yet to be Determined"),
-    ("new",             "New"),
-    ("active",          "Active"),
-    ("inactive",        "Inactive"),
-    ("not-conn",        "Not Connected"),
-    ("disconn-bill",    "Disconnected (Has Bill)"),
-    ("disconn-no-bill", "Disconnected (No Bill)"),
-    ("n-a",             "Not Applicable"),
-)
-
-meter_type_choices = (
-    ("none",    "None"),
-    ("analog",  "Analog"),
-    ("ppm",     "Prepaid Meter (PPM)"),
-)
-
-meter_status_choices = (
-    ("unknown",         "Yet to be Determined"),
-    ("n-a",         "Not Applicable"),
-    ("none",        "None"),
-    ("ok",          "OK"),
-    ("bypass",      "By-Pass"),
-    ("burnt",       "Burnt"),
-    ("faulty",      "Faulty"),
-    ("abandoned",   "Abandoned"),
-    ("removed",     "Removed"),
-    ("stolen",      "Stolen"),
-    ("other",       "Other"),
-)
-
-tariff_choices = (
-    ("R1","R1"), ("R2.A","R2.A"), ("R2.B","R2.B"), ("R3","R3"), ("R4","R4"),
-    ("C1.A","C1.A"), ("C1.B","C1.B"), ("C2","C2"), ("C3","C3"),
-    ("D1","D1"), ("D2","D2"), ("D3","D3"),
-    ("A1","A1"), ("A2","A2"), ("A3","A3"),
-    ("L1","L1")
-)
-
 # voltage ratios
 class Volt:
     MVOLTL_LVOLT = 1

@@ -9,7 +9,7 @@ from kedat.core import Storage as _
 import db                
 from utils import get_session, write_log, get_weekdate_bounds, view,\
      _get_ref_date
-from services import api, stats, transform, report
+from services import api, choices, stats, transform, report
 from settings import FMT_SHORTDATE, NL_PAGE_SIZE
 from routes import authnz, authorize
 from forms import CaptureForm
@@ -256,10 +256,10 @@ def _query_capture(tbl, title, item_id):
             'records': page,
             'search_text': q,
             'filter_params': _(query),
-            'acct_status_choices': db.acct_status_choices,
-            'meter_type_choices': db.meter_type_choices,
-            'meter_status_choices': db.meter_status_choices,
-            'tariff_choices': db.tariff_choices,
+            'acct_status_choices': choices.ACCT_STATUS,
+            'meter_type_choices': choices.METER_TYPE,
+            'meter_status_choices': choices.METER_STATUS,
+            'tariff_choices': choices.TARIFF,
         }
     else:
         query = {}

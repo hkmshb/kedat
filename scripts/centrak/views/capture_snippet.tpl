@@ -4,6 +4,7 @@
         % for index, title in enumerate(form._meta['fields']):
             % fieldset = form._meta['fields'][title]
             <div class="panel panel-default panel-compressed">
+                % if title != 'capture':
                 <div class="panel-heading">
                     <h4 class="panel-title">
                         <a role="button" data-toggle="collapse" data-parent="#accordion_{{title}}" href="#collapse_{{title}}">
@@ -11,6 +12,7 @@
                         </a>
                     </h4>
                 </div>
+                % end
                 % if index > 0:
                 <div id="collapse_{{title}}" class="panel-collapse collapse">
                 % end
