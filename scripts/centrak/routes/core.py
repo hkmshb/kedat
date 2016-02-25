@@ -185,11 +185,12 @@ def report_default():
 @route('/captures/')
 @view('capture-list')
 def capture_list():
-    return _query_capture(
+    result = _query_capture(
         tbl = db.Capture,
         title = 'Captures',
-        item_id=None,
-    )
+        item_id=None )
+    result['has_updates'] = _query_available_update_count
+    return result
 
 
 @route('/captures/<item_id:int>/')
@@ -225,7 +226,7 @@ def update_view(item_id):
 def _query_capture(tbl, title, item_id):
     if not item_id:
         # handle query parameters here
-        query, q = {}, request.query.get('q')
+        query, sorts, q = {}, {}, request.query.get('q')
         if q:
             search = {'$regex': '.*%s.*' % q, '$options':'i'}
             query = {'$or': [
@@ -240,19 +241,28 @@ def _query_capture(tbl, title, item_id):
             ]}
         else:
             query = {}
-            fields = ['datetime_today','enum_id','rseq','acct_status','acct_no',
-                      'meter_status','meter_type']
-            for f in fields:
+            filter_fields = ['datetime_today','enum_id','rseq','acct_status',
+                             'acct_no', 'meter_status','meter_type']
+            for f in filter_fields:
                 entry = request.query.get(f, None)
                 if entry:
                     query[f] = {'$regex': '.*%s.*' % entry, '$options':'i'}
+            
+            sort_fields = ['sort_by', 'then_by']
+            for sf in sort_fields:
+                entry = request.query.get(sf, None)
+                if entry:
+                    sorts[sf] = entry
 
         # data to retrieve
-        page = tbl.query(paginate=True, **query)
+        page = tbl.query(paginate=True, sort_by=list(sorts.values()), **query)
+        query.update(sorts)     # update to form filter_query
+        
         return {
             'title': title,
             'records': page,
             'search_text': q,
+            # select choices for the filter form
             'filter_params': _(query),
             'acct_status_choices': choices.ACCT_STATUS,
             'meter_type_choices': choices.METER_TYPE,
@@ -266,3 +276,9 @@ def _query_capture(tbl, title, item_id):
             'title': title,
             'record': record,
         }
+
+
+def _query_available_update_count(id, rseq):
+    result = db.db.captures.count({'_id': {'$ne': id}, 'rseq': rseq})
+    return result
+

@@ -51,7 +51,18 @@
                     <td>{{ f(r.acct_no) }}</td>
                     <td>{{ f(r.tariff) }}</td>
                     <td>{{ f(r.meter_type) }}</td>
-                    <td><i class="glyphicon glyphicon-none"></i></td>
+                    <td>
+                        % if not defined('has_updates'):
+                            <i class="glyphicon glyphicon-none"></i>
+                        % else:
+                            % count = has_updates(r._id, r.rseq)
+                            % if count == 0:
+                                <i class="glyphicon glyphicon-none"></i>
+                            % else:
+                                <i class="glyphicon glyphicon-flag" title="{{count}}" style="color:red"></i>
+                            % end
+                        % end
+                    </td>
                 </tr>
                 % end
             % else:

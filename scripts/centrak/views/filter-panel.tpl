@@ -1,5 +1,7 @@
 % get = lambda x: x['$regex'][2:-2] or '' if x else ''
 % selected = lambda x, y: 'selected=""' if x and (x['$regex'][2:-2] or '') == y else ''
+% selected2 = lambda x, y: 'selected=""' if x == y else ''
+
 <form class="form-stacked" method="get">
     <div class="filter-panel">
         <a href="javascript:;" data-click="filter-panel-expand" class="filter-collapse-btn">
@@ -39,7 +41,7 @@
                     <select name="acct_status" class="form-control input-sm">
                         <option value="">&laquo; Select One &raquo;</option>
                     % for item in acct_status_choices:
-                        <option value="{{ item[0] }}" {{ selected(q.acct_status, item[0]) }}>{{ item[1] }}</option>
+                        <option value="{{ item[0] }}" {{! selected(q.acct_status, item[0]) }}>{{ item[1] }}</option>
                     % end
                     </select>
                 </div>
@@ -57,7 +59,7 @@
                     <select name="meter_status" class="form-control input-sm" placeholder="Select Meter Status">
                         <option value="">&laquo; Select One &raquo;</option>
                     % for item in meter_status_choices:
-                        <option value="{{ item[0] }}" {{ selected(q.meter_status, item[0]) }}>{{ item[1] }}</option>
+                        <option value="{{ item[0] }}" {{! selected(q.meter_status, item[0]) }}>{{ item[1] }}</option>
                     % end
                     </select>
                 </div>
@@ -68,15 +70,44 @@
                     <select name="meter_type" class="form-control input-sm">
                         <option value="">&laquo; Select One &raquo;</option>
                     % for item in meter_type_choices:
-                        <option value="{{ item[0] }}" {{ selected(q.meter_type, item[0]) }}>{{ item[1] }}</option>
+                        <option value="{{ item[0] }}" {{! selected(q.meter_type, item[0]) }}>{{ item[1] }}</option>
                     % end
                     </select>
                 </div>
             </div>
-
+            % sort_choices = (('rseq', 'Route Sequence'), ('group', 'Enum. Group'), ('datetime_today', 'Capture Date'))
+            
+            <div class="divider"></div>
+            <h5 class="m-t-0">Sort Parameters</h5>
+            <div class="divider"></div>
+            
+            <div class="row m-t-10">
+                <div class="col-md-5 control-label">Sort By</div>
+                <div class="col-md-7">
+                    <select name="sort_by" class="form-control input-sm">
+                        <option value="">&laquo; Select One &raquo;</option>
+                        % for (v, t) in sort_choices:
+                            <option value="{{ v }}" {{! selected2(q.sort_by, v) }}> {{ t }} </option>
+                        % end
+                    </select>
+                </div>
+            </div>
+            <div class="row m-t-10">
+                <div class="col-md-5 control-label">Then By</div>
+                <div class="col-md-7">
+                    <select name="then_by" class="form-control input-sm">
+                        <option value="">&laquo; Select One &raquo;</option>
+                        % for (v, t) in sort_choices:
+                            <option value="{{ v }}" {{! selected2(q.then_by, v) }}> {{ t }} </option>
+                        % end
+                    </select>
+                </div>
+            </div>
+            <div class="divider"></div>
+            
             <div class="row m-t-10">
                 <div class="col-md-12">
-                    <button type="submit" class="btn btn-default" name="filter">Filter</button>
+                    <button type="submit" class="btn btn-default" name="filter">Apply</button>
                     <button type="reset" class="btn btn-default" name="reset">Clear</button>
                 </div>
             </div>
