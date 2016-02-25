@@ -14,7 +14,7 @@
         % extra_head()
     % end
 </head>
-<body>
+<body ng-app="centrakApp">
     % authnz = get_authnz()
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">

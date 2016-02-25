@@ -1,36 +1,43 @@
-<div class="x">
+<div class="wrapper">
     <form method="post" class="form-horizontal form-compressed">
-        <div class="panel-group" id="accordion_{{title}}">
-        % for index, title in enumerate(form._meta['fields']):
-            % fieldset = form._meta['fields'][title]
-            <div class="panel panel-default panel-compressed">
-                % if title != 'capture':
-                <div class="panel-heading">
+        <div class="panel-group" id="accordion_:{ title }:">
+            <div class="panel panel-default panel-compressed" ng-repeat="(title, meta) in _meta.fields">
+                <div class="panel-heading" ng-if="title !== 'capture'">
                     <h4 class="panel-title">
-                        <a role="button" data-toggle="collapse" data-parent="#accordion_{{title}}" href="#collapse_{{title}}">
-                            {{ title }}
+                        <a role="button" data-toggle="collapse" data-parent="#accordion_:{ title }:" href="#collapse_:{ title }:">
+                            :{ title }:
                         </a>
                     </h4>
                 </div>
-                % end
-                % if index > 0:
-                <div id="collapse_{{title}}" class="panel-collapse collapse">
-                % end
+                <div id="collapse_:{ title }:" class="panel-collapse" ng-class="{'collapse': title !== 'capture'}">
                     <div class="panel-body">
-                        % for field in fieldset:
-                        <div class="form-group">
-                            <label for="id_{{field}}" class="col-md-3 control-label">{{ fieldset[field] }} : </label>
-                            <div class="col-md-8">
-                                {{! form.render_field(field, record) }}
+                        <div class="form-group" ng-repeat="(field, label) in meta">
+                            <label for="id_:{field}:" class="col-md-3 control-label">:{ label }:: </label>
+                            
+                            <div class="col-md-8" ng-if="field[0] == '_' || title == 'meta'">
+                                <label ng-if="title != 'meta'" id="id_:{ field }:" name=":{ field }:" class="form-control-static">:{ capture[field.substr(1)] }:</label>
+                                <label ng-if="title == 'meta'" id="id_:{ field }:" name=":{ field }:" class="form-control-static">:{ capture[field] }:</label>
+                            </div>
+                            
+                            <div class="col-md-8" ng-if="_meta.widgets.select.indexOf(field) > -1">
+                                <select id="id_:{ field }:" name=":{ field }:" class="form-control" >
+                                    <option value="">&laquo; Select One &raquo;</option>
+                                    <option ng-repeat="(value, text) in _choices[field]" value=":{ value }:"
+                                            ng-selected="capture[field] == value">:{ text }:</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-8" ng-if="field[0] !== '_' && title !== 'meta' && _meta.widgets.select.indexOf(field) == -1">
+                                <input type="text" id="id_:{ field }:" name=":{ field }:" class="form-control" ng-model="capture[field]"
+                                       change-on-blur="listenForChange(newValue, oldValue)"
+                                       ng-if="field === 'rseq'" />
+                                <input type="text" id="id_:{ field }:" name=":{ field }:" class="form-control" ng-model="capture[field]"
+                                       ng-if="field !== 'rseq'" />
                             </div>
                         </div>
-                        % end
                     </div>
-                % if index > 0:
                 </div>
-                % end
             </div>
-        % end
         </div>
     </form>
 </div>

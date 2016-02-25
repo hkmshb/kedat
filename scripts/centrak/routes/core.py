@@ -194,14 +194,12 @@ def capture_list():
 
 @route('/captures/<item_id:int>/')
 @view('capture-view')
-def capture_list(item_id):
-    result = _query_capture(
+def capture_view(item_id):
+    return _query_capture(
         tbl = db.Capture,
         title = 'Capture Item',
         item_id=item_id,
     )
-    result['form'] = CaptureForm(request)
-    return result
 
 
 @route('/updates/')

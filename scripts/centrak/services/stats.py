@@ -188,7 +188,10 @@ def _meter_type_summary(df):
     values = ['none', 'analogue', 'ppm']
     
     for value in values:
-        f = df[df[key] == value]
-        result[value] = f[key].size
+        try:
+            f = df[df[key] == value]
+            result[value] = f[key].size
+        except:
+            result[value] = '-'
     return result
 

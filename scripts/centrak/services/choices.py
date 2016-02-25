@@ -64,6 +64,11 @@ METER_LOCATION = (
     ('outside-building', 'Outside the Building'),
 )
 
+METER_PHASE = (
+    ('1-phase', '1 Phase'),
+    ('3-phase', '3 Phase'),
+)
+
 PLOT_TYPE = (
     ('residence',   'Residence'),
     ('flats-estate',  'Flats/Estate'),
@@ -85,6 +90,18 @@ SUPPLY_SOURCE = (
     ('disconnected', 'Disconnected'),
     ('pole',         'Pole'),
     ('neighbour',    'Neighbour')
+)
+
+OCCUPANT = (
+    ('unknown', 'Unknown'),
+    ('tenant', 'Tenant'),
+    ('owner', 'Owner'),
+)
+
+ADDY_STATE = (
+    ('KN', 'Kano'),
+    ('KT', 'Katsina'),
+    ('JG', 'Jigawa'),
 )
 
 
