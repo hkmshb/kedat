@@ -15,8 +15,9 @@ sys.path.append(os.path.join(BASE_DIR, '..', '..'))
 import db
 
 
-rpt_cols = ['datetime_today', 'rseq', 'enum_id', 'cust_name', 'addy_no', 'addy_street',
-            'acct_status', 'acct_no', 'tariff']
+rpt_cols = ['datetime_today', 'rseq', 'enum_id', 'cust_name', 'addy_no', 
+            'addy_street', 'acct_status', 'acct_no', 'tariff', 'cust_mobile1', 
+            'cust_mobile2']
 
 def get_duplicate_rseqs(df):
     key = 'rseq'
@@ -67,15 +68,35 @@ def get_records_by_upriser(upriser_code):
     result = df[rpt_cols]
     result = result.sort(['rseq'], ascending=[1])
     return result
- 
+
+
+def get_records_by_acct_status(status, project_id):
+    query = {'acct_status': status}
+    if project_id:
+        query.update({'project_id': project_id})
+    
+    captures = db.Capture.query(paginate=False, **query)
+    df = pd.DataFrame(list(captures))
+    
+    result = df.sort(['project_id', 'rseq'], ascending=[1, 1])
+    result = result[rpt_cols]
+    return result
+
 
 def run(args, target_dir):
     records, report_title = None, None
+    print('Generating report...')
     if args.upriser:
-        print('Generating report...')
         name_fmt = 'captures-by-upriser-%s.xls'
         report_title = name_fmt % args.upriser.replace('/','_')
         records = get_records_by_upriser(args.upriser)
+    elif args.acct_status:
+        if not args.project_id:
+            raise Exception("Project Id/Code required.")
+        
+        name_fmt = 'captures-by-acct-status-%s-%s.xls'
+        report_title = name_fmt % (args.project_id, datetime.today().strftime('%Y%m%d'))
+        records = get_records_by_acct_status(args.acct_status, args.project_id)
 
 
     # write out file
@@ -94,6 +115,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Report Generation Script")
     add = parser.add_argument
     add('-u', '--upriser', help="Upriser code")
+    add('-p', '--project-id', help="Project code")
+    add('-a', '--acct-status', help="Account status")
 
     if not os.path.exists(REPORT_DIR):
         os.makedirs(REPORT_DIR)
