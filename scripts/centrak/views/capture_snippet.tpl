@@ -1,4 +1,5 @@
-<div class="wrapper">
+<script type="text/ng-template" id="capture_snippet.html">
+  <div class="wrapper">
     <form method="post" class="form-horizontal form-compressed">
         <div class="panel-group" id="accordion_:{ title }:">
             <div class="panel panel-default panel-compressed" ng-repeat="(title, meta) in _meta.fields">
@@ -12,7 +13,7 @@
                 <div id="collapse_:{ title }:" class="panel-collapse" ng-class="{'collapse': title !== 'capture'}">
                     <div class="panel-body">
                         <div class="form-group" ng-repeat="(field, label) in meta">
-                            <label for="id_:{field}:" class="col-md-3 control-label">:{ label }:: </label>
+                            <label for="id_:{field}:" class="col-md-4 control-label">:{ label }:: </label>
                             
                             <div class="col-md-8" ng-if="field[0] == '_' || title == 'meta'">
                                 <label ng-if="title != 'meta'" id="id_:{ field }:" name=":{ field }:" class="form-control-static">:{ capture[field.substr(1)] }:</label>
@@ -40,4 +41,5 @@
             </div>
         </div>
     </form>
-</div>
+  </div>
+</script>

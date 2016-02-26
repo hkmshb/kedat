@@ -32,7 +32,7 @@
             <div class="row m-t-10">
                 <div class="col-md-5 control-label">Route Sequence</div>
                 <div class="col-md-7">
-                    <input type="text" class="form-control" name="rseq" value="{{ get(q.rseq) }}" />
+                    <input type="text" class="form-control input-sm" name="rseq" value="{{ get(q.rseq) }}" />
                 </div>
             </div>
             <div class="row m-t-10">

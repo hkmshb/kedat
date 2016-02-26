@@ -196,11 +196,16 @@ def capture_list():
 @route('/captures/<item_id:int>/')
 @view('capture-view')
 def capture_view(item_id):
-    return _query_capture(
-        tbl = db.Capture,
-        title = 'Capture Item',
-        item_id=item_id,
-    )
+    r = _query_capture(
+            tbl=db.Capture, 
+            title='Capture Item', 
+            item_id=item_id)
+    qr_dup = {'_id': {'$ne': item_id}, 
+              'rseq': r['record']['rseq']}
+    
+    cur = db.Capture.query(paginate=False, **qr_dup)
+    r['duplicates'] = [_(item) for item in cur]
+    return r
 
 
 @route('/updates/')

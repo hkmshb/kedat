@@ -277,13 +277,13 @@ li.separator > span {
 /* filter panel */
 .filter-panel {
     position: fixed;
-    right: -250px;
+    right: -270px;
     top: 80px;
     z-index: 1020;
     background: #FFF none repeat scroll 0% 0%;
     padding: 15px;
     box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.4);
-    width: 250px;
+    width: 270px;
     transition: right 0.2s linear 0s;
     font-size: 12px;
 }
@@ -318,7 +318,7 @@ li.separator > span {
 
 .filter-panel .divider {
     height: 1px;
-    margin: 15px 0px;
+    margin: 7px 0px;
     background: #F2F2F2 none repeat scroll 0% 0%;
 }
 
@@ -333,17 +333,35 @@ li.separator > span {
     padding-top: 3px;
 }
 
+.filter-panel input[type=text], 
+.filter-panel select {
+	height: 26px;
+}
+
+.filter-panel .input-group-addon.btn {
+	height: 24px;
+	font-size: 12px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+
 .row {
     margin: 0px -10px;
 }
 
 .m-t-0 {
-	font-weight: bold;
+    font-weight: bold;
     margin-top: 0px !important;
 }
 
 .m-t-10 {
-    margin-top: 10px !important;
+    margin-top: 4px !important;
+}
+
+.m-t-10 .col-md-5,
+.m-t-10 .col-md- 7 {
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
 .narrow-labels tr:first-child label {
@@ -389,6 +407,7 @@ li.separator > span {
 .form-compressed .control-label,
 .form-compressed .form-control-static { 
     padding-left: 5px;
+    padding-right: 5px;
     font-size: 12px; 
 }
 .form-compressed .form-control-static {
@@ -415,4 +434,25 @@ li.separator > span {
 .panel-compressed select {
     padding: 1px 5px;
     height: 24px;
+}
+
+.panel-section {
+	font-size: 12px;
+}
+
+.panel-section h6 {
+	font-weight: bold;
+	text-transform: uppercase;
+	padding-bottom: 3px;
+	border-bottom: dashed 1px #ddd;
+}
+
+.panel-section ul {
+	list-style: none;
+	padding-left: 10px;
+}
+
+h5.section-head {
+    text-transform: uppercase; 
+    font-weight: bold;
 }
