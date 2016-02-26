@@ -232,6 +232,7 @@ def _query_capture(tbl, title, item_id):
     if not item_id:
         # handle query parameters here
         query, sorts, q = {}, {}, request.query.get('q')
+        duplicate_field = None
         if q:
             search = {'$regex': '.*%s.*' % q, '$options':'i'}
             query = {'$or': [
@@ -247,11 +248,16 @@ def _query_capture(tbl, title, item_id):
         else:
             query = {}
             filter_fields = ['datetime_today','enum_id','rseq','acct_status',
-                             'acct_no', 'meter_status','meter_type']
+                             'acct_no', 'meter_status','meter_type',
+                             'show_duplicate']
+            
             for f in filter_fields:
                 entry = request.query.get(f, None)
                 if entry:
-                    query[f] = {'$regex': '.*%s.*' % entry, '$options':'i'}
+                    if f != 'show_duplicate':
+                        query[f] = {'$regex': '.*%s.*' % entry, '$options':'i'}
+                    else:
+                        duplicate_field = entry
             
             sort_fields = ['sort_by', 'then_by']
             for sf in sort_fields:
@@ -260,8 +266,13 @@ def _query_capture(tbl, title, item_id):
                     sorts[sf] = entry
 
         # data to retrieve
-        page = tbl.query(paginate=True, sort_by=list(sorts.values()), **query)
-        query.update(sorts)     # update to form filter_query
+        page = tbl.query(paginate=True, sort_by=list(sorts.values()), 
+                         duplicate_field=duplicate_field, **query)
+        
+        # update so filter_query form state is restored
+        query.update(sorts)
+        if duplicate_field:
+            query['show_duplicate'] = duplicate_field
         
         return {
             'title': title,
@@ -273,6 +284,7 @@ def _query_capture(tbl, title, item_id):
             'meter_type_choices': choices.METER_TYPE,
             'meter_status_choices': choices.METER_STATUS,
             'tariff_choices': choices.TARIFF,
+            'duplicate_choices': choices.DUPLICATES,
         }
     else:
         query = {}

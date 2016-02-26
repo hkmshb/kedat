@@ -199,9 +199,22 @@ class CaptureBase:
                   .find({'project_id': project_id})\
                   .sort('date_created', pymongo.DESCENDING)
         return utils.paginate(cur) if paginate else cur
-
+    
+    def get_duplicates(self, field, **params):
+        qry = ({} if not params else params)
+        aggregation = [
+            {'$match': qry},
+            {'$group': {'_id': '$%s' % field, 'total': {'$sum': 1}}},
+            {'$match': {'total': {'$gt': 1}}}
+        ]
+        
+        duplicates = []
+        for r in self.db.aggregate(aggregation):
+            duplicates.append(r['_id'])
+        return (field, duplicates)
+    
     def query(self, project_id=None, form_id=None, include_inactive=False,
-                paginate=True, sort_by=None, **params):
+                paginate=True, sort_by=None, duplicate_field=None, **params):
         qry = {}
         if project_id:
             qry.update({'project_id': project_id})
@@ -212,6 +225,11 @@ class CaptureBase:
             pass
         if params:
             qry.update(params)
+        
+        # check if to restrict filter to duplicates only
+        if duplicate_field:
+            duplicates = self.get_duplicates(duplicate_field, **qry)
+            qry = {duplicate_field: {'$in': duplicates[1]}}
         
         cur = self.db.find(qry)
         if not sort_by:

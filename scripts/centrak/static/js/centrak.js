@@ -20,7 +20,9 @@ handleActivitySummaryRowToggle = function() {
 handleCaptureFiltering = function() {
     var query = "", entry = ""
       , fnames = ['datetime_today', 'enum_id', 'rseq', 'acct_status', 'acct_no',
-                  'meter_status', 'meter_type', 'sort_by', 'then_by']
+                  'meter_status', 'meter_type', 'show_duplicate', 'sort_by', 
+                  'then_by'];
+    
     for (fn in fnames) {
         entry = $('[name=' + fnames[fn] + ']').val();
         if (entry !== undefined && entry !== "") {

@@ -1,3 +1,8 @@
+DUPLICATES = (
+    ('rseq',    'Route Sequence'),
+    ('acct_no', 'Account Number'),
+)
+
 ACCT_STATUS = (
     ('unknown',         'Yet to be Determined'),
     ('new',             'New'),
