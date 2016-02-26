@@ -9,15 +9,18 @@ _CHOICES_CACHE = None
 
 
 
-@route('/api/captures/<capture_id:int>/')
-def captures(capture_id):
-    record = db.Capture.get(capture_id)
-    return {
-        'capture': record,
-        '_choices': _collect_choices(),
-        '_meta': forms.CaptureForm._meta
-    }
-
+@route('/api/<record_type:re:(captures|updates)>/<record_id:int>/')
+def captures(record_type, record_id):
+    table = db.Capture if record_type == 'captures' else db.Update
+    record = table.get(record_id)
+    
+    result = {'capture': record}
+    if not request.query.get('record_only', False):
+        result.update({
+            '_choices': _collect_choices(),
+            '_meta': forms.CaptureForm._meta
+        })
+    return result
 
 
 def _collect_choices():

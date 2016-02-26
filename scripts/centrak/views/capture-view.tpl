@@ -33,7 +33,7 @@
         <div ng-include="'capture_snippet'" ng-cloak></div>
     </div>
     <div class="col-md-5 compared-item">
-        &nbsp;Baboon!
+        &nbsp;
     </div>
 </div>
 
