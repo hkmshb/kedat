@@ -20,8 +20,8 @@ handleActivitySummaryRowToggle = function() {
 handleCaptureFiltering = function() {
     var query = "", entry = ""
       , fnames = ['datetime_today', 'enum_id', 'rseq', 'acct_status', 'acct_no',
-                  'meter_status', 'meter_type', 'show_duplicate', 'sort_by', 
-                  'then_by'];
+                  'meter_status', 'meter_type', 'project_id', 'show_duplicate', 
+                  'sort_by', 'then_by'];
     
     for (fn in fnames) {
         entry = $('[name=' + fnames[fn] + ']').val();
@@ -29,7 +29,7 @@ handleCaptureFiltering = function() {
             query += (fnames[fn] + "=" + entry + "&");
         }
         
-        if (query.substr(-1) === "&")
+        if (query.substr(-1) === '&' || query.substr(-1) === '?')
         	query = loc.substring(0, query.length - 1);
 
         var pathname = window.location.pathname;

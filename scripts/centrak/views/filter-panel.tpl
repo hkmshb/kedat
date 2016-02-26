@@ -24,6 +24,17 @@
                 </div>
             </div>
             <div class="row m-t-10">
+                <div class="col-md-5 control-label">Feeder/Project</div>
+                <div class="col-md-7">
+                    <select name="project_id" class="form-control input-sm">
+                        <option value="">&laquo; Select One &raquo;</option>
+                    % for (value, text) in project_choices:
+                        <option value="{{ value }}" {{! selected(q.project_id, value) }}>{{ text }}</option>
+                    % end
+                    </select>
+                </div>
+            </div>
+            <div class="row m-t-10">
                 <div class="col-md-5 control-label">Enumerator ID</div>
                 <div class="col-md-7">
                     <input type="text" class="form-control" name="enum_id" value="{{ get(q.enum_id)}}"/>

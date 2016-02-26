@@ -15,6 +15,8 @@ from routes import authnz, authorize
 from forms import CaptureForm
 
 
+_PROJECTS_CHOICES_CACHE = None
+
 
 @route('/')
 @view('index')
@@ -285,7 +287,7 @@ def _query_capture(tbl, title, item_id, paginate=True):
             query = {}
             filter_fields = ['datetime_today','enum_id','rseq','acct_status',
                              'acct_no', 'meter_status','meter_type',
-                             'show_duplicate']
+                             'project_id', 'show_duplicate']
             
             for f in filter_fields:
                 entry = request.query.get(f, None)
@@ -309,6 +311,15 @@ def _query_capture(tbl, title, item_id, paginate=True):
         query.update(sorts)
         if duplicate_field:
             query['show_duplicate'] = duplicate_field
+            
+        # extract project choices
+        global _PROJECTS_CHOICES_CACHE
+        if not _PROJECTS_CHOICES_CACHE:
+            project_choices = []
+            for p in db.Project.get_all(False, paginate=False):
+                project_choices.append((p['id'], p['name']))
+            _PROJECTS_CHOICES_CACHE = project_choices
+        
         
         return {
             'title': title,
@@ -321,6 +332,7 @@ def _query_capture(tbl, title, item_id, paginate=True):
             'meter_status_choices': choices.METER_STATUS,
             'tariff_choices': choices.TARIFF,
             'duplicate_choices': choices.DUPLICATES,
+            'project_choices': _PROJECTS_CHOICES_CACHE,
         }
     else:
         query = {}
