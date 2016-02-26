@@ -28,12 +28,30 @@ handleCaptureFiltering = function() {
         if (entry !== undefined && entry !== "") {
             query += (fnames[fn] + "=" + entry + "&");
         }
+        
+        if (query.substr(-1) === "&")
+        	query = loc.substring(0, query.length - 1);
 
         var pathname = window.location.pathname;
         window.location = pathname + '?' + encodeURI(query);
     }
     return false;
 };
+handleCaptureExport = function() {
+	var urlpath = window.location.toString()
+	  , pathname = window.location.pathname
+	  , urlpaths = urlpath.split('?')
+	  , format = 'format=csv';
+	
+	var target_url = '/export' + pathname;
+	if (urlpaths.length === 1)
+		target_url += ('?' + format);
+	else
+		target_url += ('?' + urlpaths[1] + '&' + format);
+	
+	window.location = target_url;
+	return false;
+}
 
 App = function () {
     'use strict';
@@ -50,6 +68,11 @@ App = function () {
                 return handleCaptureFiltering();
             });
         },
+        exportCapture: function() {
+            $('[name=export_csv]').on('click', function() {
+                return handleCaptureExport();
+            });
+        }
     }
 }();
 

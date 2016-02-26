@@ -6,7 +6,7 @@ from bottle import HTTPError, post, route, request, response, redirect
 from requests.exceptions import ConnectionError
 from kedat.core import Storage as _
 
-import db                
+import db
 from utils import get_session, write_log, get_weekdate_bounds, view,\
      _get_ref_date
 from services import api, choices, stats, transform, report
@@ -228,7 +228,43 @@ def update_view(item_id):
     )
 
 
-def _query_capture(tbl, title, item_id):
+@route('/export/<record_type:re:(captures|updates)>/')
+@view('export_result')
+def export_captures(record_type):
+    import os, csv
+    from settings import KEDAT_DIR, report_cols
+    
+    table = (db.Capture if record_type == 'captures' else db.Update)
+    resp = _query_capture(table, None, None, False)
+    
+    filename = '%s-export@%s.csv' % (record_type, datetime.today().strftime('%Y%m%dT%H%M'))
+    filepath = os.path.join(KEDAT_DIR, '..', '_reports', filename)
+    extract = lambda r: {k: r.get(k, '-') for k in report_cols}
+    
+    dialect = csv.excel
+    dialect.lineterminator = '\r'
+    
+    status, error = 'Unknown', ''
+    try:
+        with open(filepath, 'w') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=report_cols, dialect=dialect)
+            writer.writeheader()
+            for record in resp['records']:
+                writer.writerow(extract(record))
+            
+            csvfile.flush()
+            status = 'Success'
+    except Exception as ex:
+        os.remove(filepath)
+        status = 'Failed'
+        error = str(ex)
+    return {
+        'title': 'Export Result', 'status': status, 
+        'filename': filename, 'error': error
+    }
+
+
+def _query_capture(tbl, title, item_id, paginate=True):
     if not item_id:
         # handle query parameters here
         query, sorts, q = {}, {}, request.query.get('q')
@@ -266,7 +302,7 @@ def _query_capture(tbl, title, item_id):
                     sorts[sf] = entry
 
         # data to retrieve
-        page = tbl.query(paginate=True, sort_by=list(sorts.values()), 
+        page = tbl.query(paginate=paginate, sort_by=list(sorts.values()), 
                          duplicate_field=duplicate_field, **query)
         
         # update so filter_query form state is restored
