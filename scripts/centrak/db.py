@@ -202,6 +202,9 @@ class CaptureBase:
     
     def get_duplicates(self, field, **params):
         qry = ({} if not params else params)
+        if field == 'acct_no':
+            qry.update({'acct_no': {'$ne': None}})
+            
         aggregation = [
             {'$match': qry},
             {'$group': {'_id': '$%s' % field, 'total': {'$sum': 1}}},
