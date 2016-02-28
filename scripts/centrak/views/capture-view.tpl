@@ -1,4 +1,4 @@
-<div class="row" ng-controller="CaptureListCtrl" style="min-height: 500px;">
+<div class="row" ng-controller="CaptureViewCtrl" style="min-height: 500px;">
     <div class="col-md-2 affix side-dash" style="padding-right: 30px">
         <h5 style="text-transform:uppercase; font-weight:bold;"> &nbsp; </h5>
         <div class="panel panel-default panel-compressed">
@@ -28,11 +28,10 @@
         </div>
     </div>
     
-    <div class="col-md-5 col-md-offset-2">
-        <h5 class="section-head">Capture Entry</h5>
-        <div ng-include="'capture_snippet'" ng-cloak></div>
+    <div class="section col-md-5 col-md-offset-2 l-view">
+        &nbsp;
     </div>
-    <div class="col-md-5 compared-item">
+    <div class="section col-md-5 compared-item r-view">
         &nbsp;
     </div>
 </div>
@@ -44,52 +43,62 @@
     <script src="/static/ng/directives.js"></script>
     
     <!-- script template -->
-    <script type="text/ng-template" id="capture_snippet">
-      <div class="capture_form">
-        <form method="post" class="form-horizontal form-compressed">
-            <div class="panel-group" id="accordion_:{ title }:">
-                <div class="panel panel-default panel-compressed" ng-repeat="(title, meta) in _meta.fields">
-                    <div class="panel-heading" ng-if="title !== 'capture'">
-                        <h4 class="panel-title">
-                            <a role="button" data-toggle="collapse" data-parent="#accordion_:{ title }:" href=".collapse_:{ title }:"
-                               ng-click="toggle_pane(title)">
-                                :{ title }:
-                            </a>
-                        </h4>
-                    </div>
-                    <div class="collapse_:{ title }: panel-collapse" ng-class="{'collapse': title !== 'capture'}">
-                        <div class="panel-body">
-                            <div class="form-group" ng-repeat="(field, label) in meta">
-                                <label for="id_:{field}:" class="col-md-4 control-label">:{ label }:: </label>
-                                
-                                <div class="col-md-8" ng-if="field[0] == '_' || title == 'meta'">
-                                    <label ng-if="title != 'meta'" id="id_:{ field }:" name=":{ field }:" class="form-control-static">:{ capture[field.substr(1)] }:</label>
-                                    <label ng-if="title == 'meta'" id="id_:{ field }:" name=":{ field }:" class="form-control-static">:{ capture[field] }:</label>
-                                </div>
-                                
-                                <div class="col-md-8" ng-if="_meta.widgets.select.indexOf(field) > -1">
-                                    <select id="id_:{ field }:" name=":{ field }:" class="form-control" >
-                                        <option value="">&laquo; Select One &raquo;</option>
-                                        <option ng-repeat="(value, text) in _choices[field]" value=":{ value }:"
-                                                ng-selected="capture[field] == value">:{ text }:</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="col-md-8" ng-if="field[0] !== '_' && title !== 'meta' && _meta.widgets.select.indexOf(field) == -1">
-                                    <input type="text" id="id_:{ field }:" name=":{ field }:" class="form-control" ng-model="capture[field]"
-                                           change-on-blur="listenForChange(newValue, oldValue)"
-                                           ng-if="field === 'rseq'" />
-                                    <input type="text" id="id_:{ field }:" name=":{ field }:" class="form-control" ng-model="capture[field]"
-                                           ng-if="field !== 'rseq'" />
+  <script type="text/ng-template" id="capture_snippet">
+    <div class="capture-form">
+        <div class="capture-ctrl clearfix">
+            <h5 class="section-head pull-left">Entry</h5>
+            <div class="control-btns full-right text-right">
+                <label for="id_:{ prefix }:drop">
+                    <input type="checkbox" id="id_:{ prefix }:drop" name="dropped" ng-checked="capture['dropped']" />  <span>Dropped</span>
+                </label>
+                <a name="save" class="btn btn-default"><i class="glyphicon glyphicon-floppy-disk"></i></a>
+            </div>
+        </div>
+        <div class="capture-body">
+            <form method="post" class="form-horizontal form-compressed">
+                <div class="panel-group" id="accordion_:{ title }:">
+                    <div class="panel panel-default panel-compressed" ng-repeat="(title, meta) in _meta.fields">
+                        <div class="panel-heading" ng-if="title !== 'capture'">
+                            <h4 class="panel-title">
+                                <a role="button" data-toggle="collapse" data-parent="#accordion_:{ title }:" href=".collapse_:{ title }:"
+                                   ng-click="toggle_pane(title)">
+                                  :{ title }:
+                                </a>
+                            </h4>
+                        </div>
+                        <div class="collapse_:{ title }: panel-collapse" ng-class="{'collapse': title !== 'capture'}">
+                            <div class="panel-body">
+                                <div class="form-group" ng-repeat="(field, label) in meta">
+                                    <label for="id_:{field}:" class="col-md-4 control-label">:{ label }:: </label>
+                                    
+                                    <div class="col-md-8" ng-if="field[0] == '_' || title == 'meta'">
+                                        <label ng-if="title != 'meta'" id="id_:{ field }:" name=":{ field }:" class="form-control-static">:{ capture[field.substr(1)] }:</label>
+                                        <label ng-if="title == 'meta'" id="id_:{ field }:" name=":{ field }:" class="form-control-static">:{ capture[field] }:</label>
+                                    </div>
+                                    
+                                    <div class="col-md-8" ng-if="_meta.widgets.select.indexOf(field) > -1">
+                                        <select id="id_:{ field }:" name=":{ field }:" class="form-control" >
+                                            <option value="">&laquo; Select One &raquo;</option>
+                                            <option ng-repeat="(value, text) in _choices[field]" value=":{ value }:"
+                                                    ng-selected="capture[field] == value">:{ text }:</option>
+                                        </select>
+                                    </div>
+                                  
+                                    <div class="col-md-8" ng-if="field[0] !== '_' && title !== 'meta' && _meta.widgets.select.indexOf(field) == -1">
+                                        <input type="text" id="id_:{ field }:" name=":{ field }:" class="form-control" ng-model="capture[field]"
+                                               change-on-blur="listenForChange(newValue, oldValue)"
+                                               ng-if="field === 'rseq'" />
+                                        <input type="text" id="id_:{ field }:" name=":{ field }:" class="form-control" ng-model="capture[field]"
+                                               ng-if="field !== 'rseq'" />
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </form>
-      </div>
-    </script>
-    
+            </form>
+        </div>
+    </div>
+  </script>
 % end
 % rebase('layout.tpl', title=title, year=year, extra_scripts=scripts)

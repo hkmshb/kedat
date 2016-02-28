@@ -456,3 +456,30 @@ h5.section-head {
     text-transform: uppercase; 
     font-weight: bold;
 }
+
+.capture-form .capture-ctrl .btn {
+	padding-top: 2px;
+	padding-bottom: 2px;
+	height: 26px;
+}
+
+.capture-form .control-btns {
+	margin-top: 5px;
+}
+
+.capture-form .capture-ctrl label {
+	font-weight: normal;
+	font-size: 13px;
+	margin-bottom: 0;
+	vertical-align: bottom;
+}
+
+.capture-form .capture-ctrl label span {
+	display: inline-block;
+	vertical-align: top;
+	margin-top: 1px;
+}
+
+.capture-form.bg-warn .panel-body {
+	xbackground-color: #fff4df;
+}
