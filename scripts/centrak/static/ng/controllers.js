@@ -3,31 +3,32 @@
 var appControllers = angular.module('centrakControllers', []);
 appControllers.controller('CaptureViewCtrl', function($scope, $http, $compile){
 	// global variables
-	$scope._coll = new Collection();
+	$scope._local_scopes = {};
 	$scope._choices = null;
 	$scope._meta = null;
 	
-	$scope.changeSelection = function() {
-		
-	};
-	
 	$scope.paneSetup = function() {
 		// bind to duplicate controls
-		var controls = angular.element('.side-dash .duplicates .item');
+		var controls = angular.element('.side-dash .identical-entries .item');
 		angular.forEach(controls, function(value, key) {
 			angular.element(value).on('change', function() {
-				var id = value.children[0].children[0]['value'];
+				var control = value.children[0].children[0]
+				  , id = control.getAttribute('value')
+				  , captureType = control.getAttribute('data-type');
 				if (id === '') {
 					var out = angular.element('.r-view')
-					  , local_scope = out.data('local-scope');
+					  , scope = $scope._local_scopes['extra'];
 					
-					if (local_scope !== null)
-						local_scope.$destroy();
+					if (scope !== null && scope !== undefined) {
+						$scope._local_scopes['extra'] = null;
+						scope.capture = null;
+						scope.$destroy();
+					}
 				
 					out.empty();
 					return;
 				} else {
-					$scope.displayCapture(id, false);
+					$scope.displayCapture(id, false, captureType);
 					return true;
 				}
 			});
@@ -37,37 +38,26 @@ appControllers.controller('CaptureViewCtrl', function($scope, $http, $compile){
 	};
 
 	// functions...
-	$scope.displayCapture = function(captureId, isFirst) {
-		if (!$scope._coll.hasId(captureId)) {
-			// pull capture from server
-			var urlpath = (isFirst
-				? '/api' + window.location.pathname
-				: '/api/' + $scope.recordType + '/' + captureId + '/?record_only=true');
-			
-			$http({'method':'GET', 'url':urlpath})
-				.then(function success(resp) {
-						  if (isFirst) {
-							  $scope._choices = resp.data._choices;
-							  $scope._meta = resp.data._meta;
-						  }
-						  var capture = resp.data.capture;
-						  $scope._coll.add(capture);
-						  $scope.showInForm(capture, isFirst);
-					  },
-					  function failed(resp) {
-						  alert(resp.data.toString());
-						  return true;
-					  });
-		} else {
-			var capture = $scope._coll.get(captureId);
-			if (capture !== null)
-				$scope.showInForm(capture, isFirst);
-		}
+	$scope.displayCapture = function(captureId, isFirst, captureType) {
+		// pull capture from server
+		var urlpath = $scope._getUrl(captureId, isFirst, captureType);
+		$http({'method':'GET', 'url':urlpath})
+			.then(function success(resp) {
+					  if (isFirst) {
+						  $scope._choices = resp.data._choices;
+						  $scope._meta = resp.data._meta;
+					  }
+					  var capture = resp.data.capture;
+					  $scope.showInForm(capture, isFirst, captureType);
+				  },
+				  function failed(resp) {
+					  alert(resp.data.toString());
+					  return true;
+				  });
 	};
 		
-	$scope.showInForm = function(capture, isFirst) {
-		var coll = $scope._coll
-		  , snippet = angular.element('#capture_snippet')
+	$scope.showInForm = function(capture, isFirst, captureType) {
+		var snippet = angular.element('#capture_snippet')
 		  , view = angular.element(isFirst? '.l-view': '.r-view')
 		  , form = angular.element(snippet.html())
 		  , scope = $scope.$new(true);
@@ -75,37 +65,66 @@ appControllers.controller('CaptureViewCtrl', function($scope, $http, $compile){
 		scope._choices = $scope._choices;
 		scope._meta = $scope._meta;
 		scope.capture = capture;
-		scope.prefix = (new Date().getTime()/100000);
+		scope.prefix = (new Date().getTime() % 100000);
 		
+		// modify form
 		form.find('.section-head').text(
-			(isFirst? 'Capture': 'Duplicate') + ' Entry');
+			(isFirst? 'Capture': captureType) + ' Entry');
 		
 		if (!isFirst) {
 			form.addClass('bg-warn');
 			form.find('.panel')
 				.removeClass('panel-default')
-				.addClass('panel-warning');
+				.addClass('panel-warning');			
 		}
 		
-		var xml = $compile(form)(scope)
-		  , btn = xml.find('[name=save]');
-		
-		btn.data('capture-id', capture._id)
+		var new_form = $compile(form)(scope)
+		  , btn = new_form.find('[name=save]')
+		  , key = isFirst? 'main': 'extra';
+				
 		btn.on('click', $scope.updateCapture);
+		btn.data('scope-key', key);
 		
-		view.empty().append(xml);
-		view.data('local-scope', scope);
+		$scope._local_scopes[key] = scope;
+		view.empty().append(new_form);
 	};
 	
 	$scope.updateCapture = function(e) {
-		var captureId = angular.element(e.currentTarget).data('capture-id')
-		  , capture = $scope._coll.get(captureId);
+		var key = angular.element(e.currentTarget).data('scope-key')
+		  , scope = $scope._local_scopes[key];
 		
-		if (capture !== null)
-			return alert(capture.cust_name);
+		if (key !== 'main') {
+			alert('Updating duplicate or update captures not supported.')
+			return false;
+		}
+				
+		if (scope !== null) {
+			var data = {'capture': scope.capture}
+			  , urlpath = '/api' + window.location.pathname + 'update';
+				  
+			$http({'method':'POST', 'data':data, 'url':urlpath})
+				.then(function success(resp) {
+						  alert(resp.data.message);
+					  },
+					  function failure(resp) {
+						  alert(resp.data.toString());
+					  });
+		}
 		else
-			return alert('could not retrieve capture');
+			alert('could not retrieve capture');
 	};
+	
+	$scope._getUrl = function(captureId, isFirst, captureType) {
+		var source = (captureType === 'duplicate'
+						? $scope.recordType
+						: $scope.recordType === 'captures' 
+							? 'updates' : 'captures');
+		
+		if (isFirst)
+			return '/api' + window.location.pathname;
+		
+		return ('/api/' + source + '/' + captureId + '/?record_only=true');
+	}
 		
 	angular.element(document).ready(function(){
 		var urlpaths = window.location.pathname.split('/')
@@ -119,40 +138,4 @@ appControllers.controller('CaptureViewCtrl', function($scope, $http, $compile){
 		$scope.displayCapture(captureId, true);
 	});
 })
-
-
-
-var Collection = function() {
-	var coll = [];
-	
-	this.add = function(element) {
-		if (element !== null && element !== undefined) {
-			coll.push(element);
-		}
-	};
-	
-	this.get = function(id) {
-		for (var i in coll) {
-			if (coll[i]._id.toString() === id.toString())
-				return coll[i]
-		}
-		return null;
-	};
-	
-	this.has = function(elem) {
-		for (var i in coll) {
-			if (coll[i]._id.toString() === elem._id.toString())
-				return true;
-		}
-		return false;
-	};
-	
-	this.hasId = function(id) {
-		for (var i in coll) {
-			if (coll[i]._id.toString() === id.toString())
-				return true;
-		}
-		return false;
-	}
-}
 

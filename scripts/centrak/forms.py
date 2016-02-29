@@ -149,6 +149,7 @@ class CaptureForm(FormBase):
     _meta = _({
         'fields': OrderedDict([
             ('capture', OrderedDict([
+                ('__id', 'Entry Id'),
                 ('_project_id','Project Id'), 
                 ('_enum_id','Enumerator Id'), 
                 ('_group','Group Name'), 

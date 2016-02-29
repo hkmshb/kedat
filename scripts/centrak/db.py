@@ -216,6 +216,9 @@ class CaptureBase:
             duplicates.append(r['_id'])
         return (field, duplicates)
     
+    def replace(self, record_id, new_record):
+        self.db.update({'_id': record_id}, new_record)
+    
     def query(self, project_id=None, form_id=None, include_inactive=False,
                 paginate=True, sort_by=None, duplicate_field=None, **params):
         qry = {}
