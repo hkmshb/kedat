@@ -45,7 +45,8 @@
             <tbody>
             % if records:
                 % for r in records:
-                <tr><td>{{! enum(r.enum_id) }}</td>
+                <tr class="{{ 'dropped' if r.dropped else 'updated' if r.last_updated else '' }}">
+                    <td>{{! enum(r.enum_id) }}</td>
                     <td><a href="{{ r._id }}/">{{ r.rseq }}</a></td>
                     <td>{{ shorten(f(r.cust_name)).title() }}</td>
                     <td>{{ shorten("%s %s" % (addy(r.addy_no), addy(r.addy_street))).title() }}
@@ -55,14 +56,30 @@
                     <td>{{ f(r.tariff) }}</td>
                     <td>{{ f(r.meter_type) }}</td>
                     <td>
-                        % if not defined('has_updates'):
-                            <i class="glyphicon glyphicon-none"></i>
+                        % if r.dropped:
+                            <i class="glyphicon glyphicon-ban-circle"></i>
+                        % elif r.last_updated:
+                            <i class="glyphicon glyphicon-tag" title="Updated: {{ r.last_updated }}"></i>
                         % else:
-                            % count = has_updates(r._id, r.rseq)
-                            % if count == 0:
+                            % if not defined('has_updates'):
                                 <i class="glyphicon glyphicon-none"></i>
                             % else:
-                                <i class="glyphicon glyphicon-flag" title="{{count}}" style="color:red"></i>
+                                % count = has_updates(r._id, r.rseq)
+                                % if count == 0:
+                                    <i class="glyphicon glyphicon-none"></i>
+                                % else:
+                                    <i class="glyphicon glyphicon-leaf" title="Available Updates: {{ count }}"></i>
+                                % end
+                            % end
+                            % if not defined('has_duplicates'):
+                                <i class="glyphicon glyphicon-none"></i>
+                            % else:
+                                % count = has_duplicates(r._id, r.rseq)
+                                % if count == 0:
+                                    <i class="glyphicon glyphicon-none"></i>
+                                % else:
+                                    <i class="glyphicon glyphicon-flag" title="Duplicates: {{count}}"></i>
+                                % end
                             % end
                         % end
                     </td>

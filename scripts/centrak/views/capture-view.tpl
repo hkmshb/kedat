@@ -86,7 +86,8 @@
                                     
                                     <div class="col-md-8" ng-if="field[0] == '_' || title == 'meta'">
                                         <label ng-if="title != 'meta'" id="id_:{ field }:" name=":{ field }:" class="form-control-static">:{ capture[field.substr(1)] }:</label>
-                                        <label ng-if="title == 'meta'" id="id_:{ field }:" name=":{ field }:" class="form-control-static">:{ capture[field] }:</label>
+                                        <label ng-if="title == 'meta' && field != 'snapshots'" id="id_:{ field }:" name=":{ field }:" class="form-control-static">:{ capture[field] }:</label>
+                                        <textarea ng-if="title == 'meta' && field == 'snapshots'" id="id_:{ field }:" class="form-control snapshot-text" rows="20" readonly>:{ capture['snapshots']['original']['capture'] }:</textarea>
                                     </div>
                                     
                                     <div class="col-md-8" ng-if="_meta.widgets.select.indexOf(field) > -1">

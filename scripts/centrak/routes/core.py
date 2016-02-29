@@ -191,7 +191,8 @@ def capture_list():
         tbl = db.Capture,
         title = 'Captures',
         item_id=None )
-    result['has_updates'] = _query_available_update_count
+    result['has_duplicates'] = _query_duplicate_count
+    result['has_updates'] = _query_updates_count
     return result
 
 
@@ -356,7 +357,11 @@ def _query_capture(tbl, title, item_id, paginate=True):
         }
 
 
-def _query_available_update_count(id, rseq):
-    result = db.db.captures.count({'_id': {'$ne': id}, 'rseq': rseq})
+def _query_duplicate_count(record_id, rseq):
+    result = db.db.captures.count({'_id': {'$ne': record_id}, 'rseq': rseq})
     return result
 
+def _query_updates_count(record_id, rseq):
+    result = db.db.updates.count({'_id': {'$ne': record_id}, 'rseq': rseq})
+    return result
+    

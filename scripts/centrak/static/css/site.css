@@ -232,6 +232,31 @@ li.separator > span {
     padding-bottom: 0px;
 }
 
+.capture-list tr.dropped td,
+.capture-list tr.dropped td a,
+.capture-list tr.dropped td i {
+	color: #f00000;
+	text-decoration: line-through;
+}
+
+.capture-list tr.dropped td i {
+	text-decoration: none;	
+}
+
+.capture-list tr.updated td,
+.capture-list tr.updated td a,
+.capture-list tr.updated td i {
+	color: #ec9900;
+}
+
+.capture-list .glyphicon-flag { color: red; }
+.capture-list .glyphicon-leaf { color: green; }
+
+.capture-list tr th:last-child {
+	width: 45px;
+	text-align: right;
+}
+
 .form-search {
     border: solid 1px #ddd;
     border-radius: 4px 4px 0 0;
@@ -484,4 +509,10 @@ h5.section-head {
 
 .capture-form.bg-warn .panel-body {
 	xbackground-color: #fff4df;
+}
+
+.snapshot-text {
+    margin-top:30px; 
+    margin-left: -150px; 
+    width:410px;"
 }

@@ -222,7 +222,8 @@ class CaptureForm(FormBase):
                 ('_uuid','UUID'),
                 ('_version','Version'), 
                 ('_xform_id_string','XForm Id'), 
-                ('device_imei','Device IMEI')])),
+                ('device_imei','Device IMEI'),
+                ('snapshots', 'Snapshots')])),
         ]),
         'widgets': OrderedDict({
             'select': ['acct_status', 'tariff', 'tariff_new', 'meter_type', 

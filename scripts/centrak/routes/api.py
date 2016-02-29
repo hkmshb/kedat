@@ -16,7 +16,7 @@ def captures(record_type, record_id):
     table = db.Capture if record_type == 'captures' else db.Update
     record = table.get(record_id)
     
-    del record['snapshots']         # exclude snapshots
+    # del record['snapshots']         # exclude snapshots
     result = {'capture': record}
     if not request.query.get('record_only', False):
         result.update({
