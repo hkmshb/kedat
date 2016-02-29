@@ -202,11 +202,18 @@ def capture_view(item_id):
             tbl=db.Capture, 
             title='Capture Item', 
             item_id=item_id)
-    qr_dup = {'_id': {'$ne': item_id}, 
+    
+    # retrieve duplicates
+    qry_dup = {'_id': {'$ne': item_id}, 
               'rseq': r['record']['rseq']}
     
-    cur = db.Capture.query(paginate=False, **qr_dup)
+    cur = db.Capture.query(paginate=False, **qry_dup)
     r['duplicates'] = [_(item) for item in cur]
+    
+    # retrieve updates
+    qry_upd = {'rseq': r['record']['rseq']}
+    cur = db.Update.query(paginate=False, **qry_upd)
+    r['updates'] = [_(item) for item in cur]    
     return r
 
 

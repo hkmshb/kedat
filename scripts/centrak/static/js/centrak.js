@@ -77,6 +77,15 @@ App = function () {
 }();
 
 
+// extensions
+String.prototype.toTitleCase = function() {
+	if (this && this.length > 0) {
+		return this[0].toUpperCase() + this.substring(1).toLowerCase();
+	}
+	return this;
+};
+
+
 (function ($) {
     App.init();
 })(jQuery);

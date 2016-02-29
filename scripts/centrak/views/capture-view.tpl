@@ -2,20 +2,33 @@
     <div class="col-md-2 affix side-dash" style="padding-right: 30px">
         <h5 style="text-transform:uppercase; font-weight:bold;"> &nbsp; </h5>
         <div class="panel panel-default panel-compressed">
-            <div class="panel-body">
+            <div class="panel-body identical-entries">
                 <div class="panel-section section">
-                    <h6>Duplicates</h6>
                     <ul class="duplicates">
-                    % if duplicates:
                         <li class="item">
                             <label for="id_clear">
-                                <input type="radio" id="id_clear" name="duplicate" value="" /> Clear Selection
+                                <input type="radio" id="id_clear" name="entry" value="" /> Clear Selection
                             </label>
                         </li>
+                        <li><h6>Duplicates</h6></li>
+                    % if duplicates:
                         % for d in duplicates:
                         <li class="item">
                             <label for="id_{{ d._id }}">
-                                <input type="radio" id="id_{{ d._id }}" name="duplicate" value="{{ d._id }}" /> {{ d.rseq }} 
+                                <input type="radio" id="id_{{ d._id }}" name="entry" data-type="duplicate" value="{{ d._id }}" /> {{ d.rseq }} 
+                            </label>
+                        </li>
+                        % end
+                    % else:
+                        <li>None Found</li>
+                    % end
+                        
+                        <li><h6>Updates</h6></li>
+                    % if updates:
+                        % for u in updates:
+                        <li class="item">
+                            <label for="id_{{ u._id }}">
+                                <input type="radio" id="id_{{ u._id }}" name="entry" data-type="update" value="{{ u._id }}" /> {{ u.rseq }}
                             </label>
                         </li>
                         % end
@@ -49,7 +62,7 @@
             <h5 class="section-head pull-left">Entry</h5>
             <div class="control-btns full-right text-right">
                 <label for="id_:{ prefix }:drop">
-                    <input type="checkbox" id="id_:{ prefix }:drop" name="dropped" ng-checked="capture['dropped']" />  <span>Dropped</span>
+                    <input type="checkbox" id="id_:{ prefix }:drop" name="dropped" ng-model="capture['dropped']" />  <span>Dropped</span>
                 </label>
                 <a name="save" class="btn btn-default"><i class="glyphicon glyphicon-floppy-disk"></i></a>
             </div>
