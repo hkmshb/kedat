@@ -100,7 +100,7 @@
                                   
                                     <div class="col-md-8" ng-if="field[0] !== '_' && title !== 'meta' && _meta.widgets.select.indexOf(field) == -1">
                                         <input type="text" id="id_:{ field }:" name=":{ field }:" class="form-control" ng-model="capture[field]"
-                                               change-on-blur="listenForChange(newValue, oldValue)"
+                                               change-on-blur="onRSeqChanged(newValue, oldValue)"
                                                ng-if="field === 'rseq'" />
                                         <input type="text" id="id_:{ field }:" name=":{ field }:" class="form-control" ng-model="capture[field]"
                                                ng-if="field !== 'rseq'" />

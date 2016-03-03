@@ -66,6 +66,7 @@ appControllers.controller('CaptureViewCtrl', function($scope, $http, $compile){
 		scope._meta = $scope._meta;
 		scope.capture = capture;
 		scope.prefix = (new Date().getTime() % 100000);
+		scope.onRSeqChanged = handleRSeqChanged(scope);
 		
 		// modify form
 		form.find('.section-head').text(
@@ -161,7 +162,7 @@ appControllers.controller('CaptureViewCtrl', function($scope, $http, $compile){
 				  , upcode=Number(parts[1])
 				  , sn=Number(parts[2]);
 				
-				if (sscode.length !== 6 || upcode.length !== 1 || sn.length !== 4 ||
+				if (sscode.length !== 6 || parts[1].length !== 1 || parts[2].length !== 4 ||
 					isNaN(Number('0x' + sscode.substring(2))))
 					return false;
 				
@@ -196,6 +197,16 @@ appControllers.controller('CaptureViewCtrl', function($scope, $http, $compile){
 			}
 		}
 		return false;
+	},
+	handleRSeqChanged = function(scope) { 
+		return function(newValue, oldValue) {
+			if (!isValidRouteSeqFormat(newValue))
+				return;
+			
+			var parts = newValue.toUpperCase().split('/');
+			scope.capture.station = parts[0];
+			scope.capture.upriser = parts[0] + "/" + parts[1];
+		}
 	};
 })
 

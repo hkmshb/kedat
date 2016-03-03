@@ -70,14 +70,14 @@ def capture_update(record_type, record_id):
         snapshot = record.copy()
         del snapshot['snapshots']
     else:
-        snapshot = record['snapshots']['original']['capture_upd']
+        snapshot = record['snapshots']['original']['capture']
         
     # save changes
     last_updated = datetime.today().strftime('%Y-%m-%d')
     capture_upd.last_updated = last_updated
     capture_upd.snapshots = {
         'original': {
-            'capture_upd': snapshot,
+            'capture': snapshot,
             'last_updated': last_updated,
             'updated_by': None
         }
