@@ -64,7 +64,8 @@
                 <label for="id_:{ prefix }:drop">
                     <input type="checkbox" id="id_:{ prefix }:drop" name="dropped" ng-model="capture['dropped']" />  <span>Dropped</span>
                 </label>
-                <a name="save" class="btn btn-default"><i class="glyphicon glyphicon-floppy-disk"></i></a>
+                <a name="save" class="btn btn-default" title="Save"><i class="glyphicon glyphicon-floppy-disk"></i></a>
+                <a name="expand" class="btn btn-default" title="Expand All"><i class="glyphicon glyphicon-resize-full"></i></a>
             </div>
         </div>
         <div class="capture-body">
@@ -82,15 +83,15 @@
                         <div class="collapse_:{ title }: panel-collapse" ng-class="{'collapse': title !== 'capture'}">
                             <div class="panel-body">
                                 <div class="form-group" ng-repeat="(field, label) in meta">
-                                    <label for="id_:{field}:" class="col-md-4 control-label">:{ label }:: </label>
+                                    <label for="id_:{field}:" class="col-md-4 col-sm-4 control-label">:{ label }:: </label>
                                     
-                                    <div class="col-md-8" ng-if="field[0] == '_' || title == 'meta'">
+                                    <div class="col-md-8 col-sm-8" ng-if="field[0] == '_' || title == 'meta'">
                                         <label ng-if="title != 'meta'" id="id_:{ field }:" name=":{ field }:" class="form-control-static">:{ capture[field.substr(1)] }:</label>
                                         <label ng-if="title == 'meta' && field != 'snapshots'" id="id_:{ field }:" name=":{ field }:" class="form-control-static">:{ capture[field] }:</label>
                                         <textarea ng-if="title == 'meta' && field == 'snapshots'" id="id_:{ field }:" class="form-control snapshot-text" rows="20" readonly>:{ capture['snapshots']['original']['capture'] }:</textarea>
                                     </div>
                                     
-                                    <div class="col-md-8" ng-if="_meta.widgets.select.indexOf(field) > -1">
+                                    <div class="col-md-8 col-sm-8" ng-if="_meta.widgets.select.indexOf(field) > -1">
                                         <select id="id_:{ field }:" name=":{ field }:" class="form-control" >
                                             <option value="">&laquo; Select One &raquo;</option>
                                             <option ng-repeat="(value, text) in _choices[field]" value=":{ value }:"
@@ -98,7 +99,7 @@
                                         </select>
                                     </div>
                                   
-                                    <div class="col-md-8" ng-if="field[0] !== '_' && title !== 'meta' && _meta.widgets.select.indexOf(field) == -1">
+                                    <div class="col-md-8 col-sm-8" ng-if="field[0] !== '_' && title !== 'meta' && _meta.widgets.select.indexOf(field) == -1">
                                         <input type="text" id="id_:{ field }:" name=":{ field }:" class="form-control" ng-model="capture[field]"
                                                change-on-blur="onRSeqChanged(newValue, oldValue)"
                                                ng-if="field === 'rseq'" />

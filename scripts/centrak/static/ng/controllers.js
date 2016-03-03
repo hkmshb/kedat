@@ -80,11 +80,13 @@ appControllers.controller('CaptureViewCtrl', function($scope, $http, $compile){
 		}
 		
 		var new_form = $compile(form)(scope)
-		  , btn = new_form.find('[name=save]')
+		  , btnExpand = new_form.find('[name=expand]')
+		  , btnSave = new_form.find('[name=save]')
 		  , key = isFirst? 'main': 'extra';
-				
-		btn.on('click', $scope.updateCapture);
-		btn.data('scope-key', key);
+		
+		btnExpand.on('click', togglePanes($(btnExpand).find('i'), new_form));
+		btnSave.on('click', $scope.updateCapture);
+		btnSave.data('scope-key', key);
 		
 		$scope._local_scopes[key] = scope;
 		view.empty().append(new_form);
@@ -206,6 +208,28 @@ appControllers.controller('CaptureViewCtrl', function($scope, $http, $compile){
 			var parts = newValue.toUpperCase().split('/');
 			scope.capture.station = parts[0];
 			scope.capture.upriser = parts[0] + "/" + parts[1];
+		}
+	},
+	togglePanes = function(icon, form) {
+		return function() {
+			var panes = form.find('.panel-collapse')
+			  , pane = angular.element(panes[1])
+			  , isCollapsed = pane.hasClass('collapse');
+			
+			if (isCollapsed)
+				icon.removeClass('glyphicon-resize-full')
+					.addClass('glyphicon-resize-small');
+			else
+				icon.removeClass('glyphicon-resize-small')
+					.addClass('glyphicon-resize-full');
+				
+			for (var i=1; i < panes.length; i++) {
+				pane = angular.element(panes[i]);
+				if (isCollapsed)
+					pane.removeClass('collapse').removeClass('in');
+				else
+					pane.addClass('collapse');
+			}
 		}
 	};
 })
