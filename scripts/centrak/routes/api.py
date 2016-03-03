@@ -36,24 +36,53 @@ def capture_update(record_type, record_id):
     if not request.json:
         return {'success':False, 'message':'Posted record not available'}
     
-    capture, snapshot = _(request.json['capture']), None
+    capture_upd, snapshot = _(request.json['capture']), None
+    
+    # if rseq changed ensure it doesn't cause duplication
+    if record.rseq != capture_upd.rseq:
+        assert record._id == capture_upd._id
+        params = {'_id': {'$ne': capture_upd._id}, 'rseq': capture_upd.rseq}
+        found = list(table.query(paginate=False, **params))
+        if found and len(found) > 0:
+            return {
+                'success':False, 
+                'message':(
+                    'Update aborted. Capture with route sequence exist.\n'
+                    'Existing Record (id=%s, enum_id=%s)' % (
+                        found[0]['_id'], found[0]['enum_id']))
+            }
+    
+    # if acct_no changed, ensure it doesn't cause duplication
+    if record.acct_no != capture_upd.acct_no:
+        assert record._id == capture_upd._id
+        params = {'_id': {'$ne': capture_upd._id}, 'acct_no': capture_upd.acct_no}
+        found = list(table.query(paginate=False, **params))
+        if found and len(found) > 0:
+            return {
+                'success': False,
+                'message': (
+                    'Update aborted. Capture with account number exist.\n'
+                    'Existing Record (id=%s, enum_id=%s)' % (
+                        found[0]['_id'], found[0]['enum_id']))
+            }
+    
     if not record.snapshots:
         snapshot = record.copy()
         del snapshot['snapshots']
     else:
-        snapshot = record['snapshots']['original']['capture']
+        snapshot = record['snapshots']['original']['capture_upd']
         
     # save changes
     last_updated = datetime.today().strftime('%Y-%m-%d')
-    capture.last_updated = last_updated
-    capture.snapshots = {
+    capture_upd.last_updated = last_updated
+    capture_upd.snapshots = {
         'original': {
-            'capture': snapshot,
+            'capture_upd': snapshot,
             'last_updated': last_updated,
             'updated_by': None
         }
     }
-    table.replace(record_id, capture)
+    table.replace(record_id, capture_upd)
     return {'success':True, 'message':'Record updated!'}
 
 
