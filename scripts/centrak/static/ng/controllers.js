@@ -101,7 +101,21 @@ appControllers.controller('CaptureViewCtrl', function($scope, $http, $compile){
 		if (scope !== null) {
 			var data = {'capture': scope.capture}
 			  , urlpath = '/api' + window.location.pathname + 'update';
-				  
+			
+			// validate route sequence
+			if (!isValidRouteSeqFormat(scope.capture.rseq)) {
+				alert('Capture route sequence format is invalid.')
+				return false;
+			}
+			
+			// validate acct number
+			if (scope.capture.acct_no && scope.capture.acct_no.length > 1) {
+				if (!isValidAcctNoFormat(scope.capture.acct_no)) {
+					alert('Capture account number is format is invalid.')
+					return false;
+				}
+			}
+			
 			$http({'method':'POST', 'data':data, 'url':urlpath})
 				.then(function success(resp) {
 						  alert(resp.data.message);
@@ -137,5 +151,51 @@ appControllers.controller('CaptureViewCtrl', function($scope, $http, $compile){
 		$scope.recordType = urlpaths[1];
 		$scope.displayCapture(captureId, true);
 	});
+	
+
+	var isValidRouteSeqFormat = function(value) {
+		if (value && value.length === 13) {
+			var parts = value.split('/');
+			if (parts.length === 3) {
+				var sscode=parts[0].toUpperCase() 
+				  , upcode=Number(parts[1])
+				  , sn=Number(parts[2]);
+				
+				if (sscode.length !== 6 || upcode.length !== 1 || sn.length !== 4 ||
+					isNaN(Number('0x' + sscode.substring(2))))
+					return false;
+				
+				if (sscode[0] !== 'S' || (sscode[1] !== '1' && sscode[1] !== '3'))
+					return false;
+				
+				if (isNaN(upcode) || upcode < 0 || upcode > 4)
+					return false;
+				
+				if (isNaN(sn)) 
+					return false;
+				return true;
+			}
+		}
+		return false;
+	},
+	isValidAcctNoFormat = function(value) {
+		if (value && value.length == 16) {
+			var parts = value.split('/');
+			if (parts.length == 4) {
+				var i, part, no=parts[3];
+				for (i==0; i < 2; i++) {
+					part = parts[i];
+					if (part.length !== 2 || isNaN(Number(part))) 
+						return false;
+				}
+				
+				if (no.length !== 7 || no.indexOf('-01') !== 4 ||
+					isNaN(Number(no.substring(0, 4))))
+					return false;
+				return true;
+			}
+		}
+		return false;
+	};
 })
 
