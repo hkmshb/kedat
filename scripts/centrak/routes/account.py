@@ -61,6 +61,7 @@ def register():
 
 
 @route('/activate/<registration_code>')
+@authorize(role='moderator')
 def activate_account(registration_code):
     session = get_session()['messages']
     try:

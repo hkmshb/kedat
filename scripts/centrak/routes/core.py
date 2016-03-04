@@ -361,7 +361,8 @@ def _query_duplicate_count(record_id, rseq):
     result = db.db.captures.count({'_id': {'$ne': record_id}, 'rseq': rseq})
     return result
 
+
 def _query_updates_count(record_id, rseq):
     result = db.db.updates.count({'_id': {'$ne': record_id}, 'rseq': rseq})
     return result
-    
+

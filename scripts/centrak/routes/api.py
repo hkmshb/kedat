@@ -4,7 +4,9 @@ Routes for API access.
 from datetime import datetime
 from bottle import route, request
 from kedat.core import Storage as _
+
 import db, forms
+from routes import authorize
 
 
 _CHOICES_CACHE = None
@@ -27,6 +29,7 @@ def captures(record_type, record_id):
 
 
 @route('/api/<record_type:re:(captures|updates)>/<record_id:int>/update', method=['POST'])
+@authorize(role='team-lead')
 def capture_update(record_type, record_id):
     table = db.Capture if record_type == 'captures' else db.Update
     record = table.get(record_id)

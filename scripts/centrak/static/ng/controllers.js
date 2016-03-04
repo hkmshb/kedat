@@ -121,7 +121,13 @@ appControllers.controller('CaptureViewCtrl', function($scope, $http, $compile){
 			
 			$http({'method':'POST', 'data':data, 'url':urlpath})
 				.then(function success(resp) {
-						  alert(resp.data.message);
+						  if (resp.data.hasOwnProperty('message'))
+							  alert(resp.data.message);
+						  else if (resp.data.indexOf('Restricted') !== -1) {
+							  alert("You do not have the necessary permissions to " +
+								    "view the request resource or perform the initiated " +
+								    "operation!");
+						  }
 					  },
 					  function failure(resp) {
 						  alert(resp.data.toString());
