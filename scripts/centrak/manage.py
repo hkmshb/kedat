@@ -31,8 +31,34 @@ def _create_user(username, password, role='user'):
         'creation_date': tstamp,
         'last_login': tstamp
     }
-    authnz._store.save_users()    
+    authnz._store.save_users()
     print('User Created.\n')
+
+
+def _create_role(role, level):
+    if role in authnz._store.roles:
+        raise Exception("error: Role already exist.")
+    
+    authnz._store.roles[role] = level
+    authnz._store.save_roles()
+
+
+def _setup_roles():
+    roles = (
+        ('admin',     100),
+        ('moderator',  80),
+        ('team-lead',  70),
+        ('member',     60),
+        ('user',       50)
+    )
+    
+    try:
+        for role, level in roles:
+            _create_role(role, level)
+        print('Roles setup successful!')
+    except Exception as ex:
+        print('Roles setup failed: %s' % str(ex))
+        raise ex
 
 
 def _list_users():
@@ -62,6 +88,8 @@ def _create_parser():
     add('--delete-role')
     add('-l', '--list-users', action='store_true')
     add('--list-roles', action='store_true')
+    add('--setup-roles', action='store_true')
+    # add('--reset-password', nargs=2)
     
     subparser = parser.add_subparsers(help='create user commands')
     parser_cu = subparser.add_parser('create-user')
@@ -87,7 +115,10 @@ def run(args):
     if args.list_roles:
         _list_roles()
         return
-
+    
+    if args.setup_roles:
+        _setup_roles()
+        return
 
 if __name__ == '__main__':
     args = _create_parser().parse_args()
