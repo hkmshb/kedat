@@ -21,7 +21,7 @@ AUTH_HEADER = {
 
 
 # pagination
-PAGE_SIZE = 20
+PAGE_SIZE = 50
 NL_PAGE_SIZE = 100
 XL_PAGE_SIZE = 200
 
