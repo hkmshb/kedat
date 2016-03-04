@@ -14,3 +14,4 @@ secret.py
 *.user
 *.sln
 *.log
+*.db
