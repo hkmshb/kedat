@@ -33,7 +33,16 @@ def wsgi_app():
     app = MongoDbSetupMiddleware(app)
     return app
 
-if __name__ == '__main__':    
+if __name__ == '__main__':
+    """
+    expected command line arguments:
+        --debug        To run the app in debug mode
+        --reload       active when debug is active; causes changes in code to
+                       be reloaded automatically by restarting the server
+        --no-auth      By-passes the authentication and authorisation process
+                       in use by the application. (meant for use during app
+                       development, together with the flags above).
+    """
     STATIC_ROOT = os.path.join(settings.BASE_DIR, 'static').replace('\\', '/')
     HOST = os.environ.get('SERVER_HOST', 'localhost')
     try:

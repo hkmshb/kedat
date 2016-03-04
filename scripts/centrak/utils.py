@@ -91,7 +91,7 @@ def make_auth_decorator(cork, username=None, role=None, fixed_role=False,
                     redirect_url = fail_auth_redirect
 
                 
-                if '--debug' not in sys.argv[1:]:
+                if '--no-auth' not in sys.argv[1:]:
                     _args = dict(username=username, role=role, 
                                  fail_redirect=redirect_url,
                                  fixed_role=fixed_role)
