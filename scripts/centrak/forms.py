@@ -1,10 +1,14 @@
-﻿import os, sys
+﻿import uuid
+import os, sys
+from datetime import datetime
+
 from bottle import HTTPError
 from collections import OrderedDict
 from kedat.core import Storage as _
 import db
 
 from services import choices
+from scripts.centrak.utils import get_session
 
 
 class FormBase:
@@ -15,6 +19,89 @@ class FormBase:
 
     def is_valid(self):
         pass
+
+
+class RegisterForm(FormBase):
+    
+    def __init__(self, request, authnz):
+        super(RegisterForm, self).__init__(request)
+        self.__authnz = authnz
+    
+    def is_valid(self):
+        self.username = self.request.forms.get('username', '').strip()
+        self.email    = self.request.forms.get('email', '').strip()
+        self.password = self.request.forms.get('password', '').strip()
+        self.confpass = self.request.forms.get('confirm_password', '').strip()
+        
+        if not self._required_fields_provided():
+            return False
+        
+        if self._username_in_user(self.username):
+            self.errors.append('Username already in use.')
+        elif not self._is_kedco_email(self.email):
+            self.errors.append('KEDCO email expected.')
+        elif not self._is_acceptable_username(self.username, self.email):
+            self.errors.append('Username must match name in email.')
+        return (len(self.errors) == 0)
+    
+    def _required_fields_provided(self):
+        if not self.username:
+            self.errors.append('Username is required')
+        if not self.email:
+            self.errors.append('Email is required')
+        if not self.password:
+            self.errors.append('Password is required')
+        if not self.confpass:
+            self.errors.append('Need to confirm provided password')
+        elif self.password != self.confpass:
+            self.errors.append('Provided passwords do not match.')
+        elif len(self.password) < 6:
+            self.errors.append('Password must be at least 6 characters long.')
+        
+        return (len(self.errors) == 0)
+    
+    def _is_kedco_email(self, email):
+        if (email and email.endswith('@kedco.ng')):
+            names = email.split('@')[0]
+            name_parts = names.split('.')
+            if len(name_parts) == 2:
+                return (len(name_parts[0]) > 1 and len(name_parts[1]) > 1)
+        return False
+    
+    def _is_acceptable_username(self, username, email):
+        if username and self._is_kedco_email(email):
+            names = email.split('@')[0]
+            if username == names or username == names.replace('.', '_'):
+                return True
+            
+            name_parts = names.split('.')
+            for name in name_parts:
+                if username == name:
+                    return True
+        return False
+    
+    def _username_in_user(self, username):
+        return (username in self.__authnz._store.users)
+    
+    def save(self):
+        # hack: should have used self.__authnz.register(...) 
+        # however, the registration required smtp configuration to send mail
+        # with link for email verification and account activation... don't
+        # need this hence required code was extracted from cork herein...
+        registration_code = uuid.uuid4().hex
+        creation_date = str(datetime.utcnow())
+        
+        h = self.__authnz._hash(self.username, self.password)
+        h = h.decode('ascii')
+        self.__authnz._store.pending_registrations[registration_code] = {
+            'username': self.username,
+            'role': 'user',
+            'hash': h,
+            'email_addr': self.email,
+            'desc': None,
+            'creation_date': creation_date,
+        }
+        self.__authnz._store.save_pending_registrations()
 
 
 class ProjectForm(FormBase):
@@ -144,7 +231,7 @@ class StationImportForm(FormBase):
         self._instance = instance
         return (len(self.errors) == 0)
 
-        
+
 class CaptureForm(FormBase):
     _meta = _({
         'fields': OrderedDict([

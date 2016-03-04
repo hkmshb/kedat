@@ -39,6 +39,8 @@
                     <ul class="nav navbar-nav">
                     % if authnz.user_is_anonymous:
                         <li><a href="/login">Log In</a></li>
+                        <li class="separator"><span href="#">|</span></li>
+                        <li><a href="/register">Register</a></li>
                     % else:
                         <li><a href="#">
                                 <i class="glyphicon glyphicon-user"></i>
