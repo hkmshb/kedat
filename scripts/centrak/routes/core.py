@@ -2,7 +2,8 @@
 Routes and views for the bottle application.
 """
 from datetime import datetime, date
-from bottle import HTTPError, post, route, request, response, redirect
+from bottle import HTTPError, post, route, request, response, redirect,\
+     static_file
 from requests.exceptions import ConnectionError
 from kedat.core import Storage as _
 
@@ -176,8 +177,9 @@ def report_default():
     ref_date = request.forms.get('ref_date')
 
     try:
-        report.write_report(project_id, ref_date)
-        messages['pass'].append('Report generated.')
+        result = report.write_report(project_id, ref_date)
+        # messages['pass'].append('Report generated.')
+        return static_file(result[0], root=result[1], download=True)
     except Exception as ex:
         messages['fail'].append('Report generation failed. %s' % str(ex))
         print(ex)
@@ -270,6 +272,9 @@ def export_captures(record_type):
             
             csvfile.flush()
             status = 'Success'
+        
+        root_dir = os.path.join(KEDAT_DIR, '..', '_reports')
+        return static_file(filename, root=root_dir, download=True)
     except Exception as ex:
         os.remove(filepath)
         status = 'Failed'

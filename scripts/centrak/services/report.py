@@ -177,4 +177,5 @@ def write_report(project_id, ref_date):
                 gf.to_excel(writer, 'group-%s-%s' % (key.lower(), date_digits))
     finally:
         writer.save()
+    return (fname, REPORT_DIR)
 
