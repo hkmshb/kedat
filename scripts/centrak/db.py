@@ -219,23 +219,31 @@ class CaptureBase:
     def replace(self, record_id, new_record):
         self.db.update({'_id': record_id}, new_record)
     
-    def query(self, project_id=None, form_id=None, include_inactive=False,
+    def query(self, project_id=None, form_id=None, include_dropped=False,
                 paginate=True, sort_by=None, duplicate_field=None, **params):
         qry = {}
         if project_id:
             qry.update({'project_id': project_id})
         if form_id:
             qry.update({'_xform_id_string': form_id})
-        if not include_inactive:
-            # qry.update({'active': {'$exists': True}})
-            pass
+        if not include_dropped:
+            qry.update({'$or': [{'dropped': False}, {'dropped': {'$exists': False}}]})
         if params:
             qry.update(params)
         
         # check if to restrict filter to duplicates only
         if duplicate_field:
-            duplicates = self.get_duplicates(duplicate_field, **qry)
-            qry = {duplicate_field: {'$in': duplicates[1]}}
+            # note: showing dropped records only does and doesn't qualify as 
+            # duplicate records depending on how you think about it... In this
+            # case we consider all records marked as dropped as duplicate and
+            # it helps answer the question 'what records have been dropped?'
+            if duplicate_field == 'dropped':
+                qry.update({duplicate_field: True})
+                if qry.get('$or') and 'dropped' in str(qry.get('$or')):
+                    del qry['$or']
+            else:
+                duplicates = self.get_duplicates(duplicate_field, **qry)
+                qry = {duplicate_field: {'$in': duplicates[1]}}
         
         cur = self.db.find(qry)
         if not sort_by:

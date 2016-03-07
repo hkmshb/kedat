@@ -1,6 +1,7 @@
 DUPLICATES = (
     ('rseq',    'Route Sequence'),
     ('acct_no', 'Account Number'),
+    ('dropped', 'Dropped Captures')
 )
 
 ACCT_STATUS = (
