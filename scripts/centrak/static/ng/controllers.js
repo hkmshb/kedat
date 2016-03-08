@@ -79,6 +79,9 @@ appControllers.controller('CaptureViewCtrl', function($scope, $http, $compile){
 				.addClass('panel-warning');			
 		}
 		
+		// update records shouldn't be editable
+		scope.is_update_record = (capture.project_id.indexOf('_cu_') !== -1);
+		
 		var new_form = $compile(form)(scope)
 		  , btnExpand = new_form.find('[name=expand]')
 		  , btnSave = new_form.find('[name=save]')
@@ -96,14 +99,22 @@ appControllers.controller('CaptureViewCtrl', function($scope, $http, $compile){
 		var key = angular.element(e.currentTarget).data('scope-key')
 		  , scope = $scope._local_scopes[key];
 		
-		if (key !== 'main') {
-			alert('Updating duplicate or update captures not supported.')
-			return false;
+		if (key !== 'main' && scope.is_update_record) {
+			if (scope.capture.dropped !== true)
+				return false;
+			
+			var msg = "Are you sure you want to drop this record? "
+					+ "It would no longer be listed as an update "
+					+ "for Route Sequence: " + scope.capture.rseq
+					+ "?";
+			
+			if (confirm(msg) !== true)
+				return false;
 		}
 				
 		if (scope !== null) {
 			var data = {'capture': scope.capture}
-			  , urlpath = '/api' + window.location.pathname + 'update';
+			  , urlpath = buildUpdateUrl(scope);
 			
 			// validate route sequence
 			if (!isValidRouteSeqFormat(scope.capture.rseq)) {
@@ -205,6 +216,11 @@ appControllers.controller('CaptureViewCtrl', function($scope, $http, $compile){
 			}
 		}
 		return false;
+	},
+	buildUpdateUrl = function(scope) {
+		var part = scope.capture.project_id.indexOf('_cf_') !== -1
+						? 'captures': 'updates';
+		return '/api/' + part + '/' + scope.capture._id + '/update';
 	},
 	handleRSeqChanged = function(scope) { 
 		return function(newValue, oldValue) {

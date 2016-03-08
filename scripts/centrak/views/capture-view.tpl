@@ -92,19 +92,29 @@
                                     </div>
                                     
                                     <div class="col-md-8 col-sm-8" ng-if="_meta.widgets.select.indexOf(field) > -1">
-                                        <select id="id_:{ field }:" name=":{ field }:" class="form-control" >
+                                        <select id="id_:{ field }:" name=":{ field }:" class="form-control" ng-model="capture[field]"
+                                                ng-if="!is_update_record">
                                             <option value="">&laquo; Select One &raquo;</option>
-                                            <option ng-repeat="(value, text) in _choices[field]" value=":{ value }:"
-                                                    ng-selected="capture[field] == value">:{ text }:</option>
+                                            <option ng-repeat="(value, text) in _choices[field]" value=":{ value }:">:{ text }:</option>
+                                        </select>
+                                        <select id="id_:{ field }:" name=":{ field }:" class="form-control" ng-model="capture[field]"
+                                                ng-if="is_update_record" disabled="">
+                                            <option value="">&laquo; Select One &raquo;</option>
+                                            <option ng-repeat="(value, text) in _choices[field]" value=":{ value }:">:{ text }:</option>
                                         </select>
                                     </div>
                                   
                                     <div class="col-md-8 col-sm-8" ng-if="field[0] !== '_' && title !== 'meta' && _meta.widgets.select.indexOf(field) == -1">
                                         <input type="text" id="id_:{ field }:" name=":{ field }:" class="form-control" ng-model="capture[field]"
                                                change-on-blur="onRSeqChanged(newValue, oldValue)"
-                                               ng-if="field === 'rseq'" />
+                                               ng-if="field === 'rseq' && !is_update_record" />
                                         <input type="text" id="id_:{ field }:" name=":{ field }:" class="form-control" ng-model="capture[field]"
-                                               ng-if="field !== 'rseq'" />
+                                               change-on-blur="onRSeqChanged(newValue, oldValue)"
+                                               ng-if="field === 'rseq' && is_update_record" disabled="" />
+                                        <input type="text" id="id_:{ field }:" name=":{ field }:" class="form-control" ng-model="capture[field]"
+                                               ng-if="field !== 'rseq' && !is_update_record" />
+                                        <input type="text" id="id_:{ field }:" name=":{ field }:" class="form-control" ng-model="capture[field]"
+                                               ng-if="field !== 'rseq' && is_update_record" readonly="" />
                                     </div>
                                 </div>
                             </div>
