@@ -24,7 +24,7 @@
                     % end
                         
                         <li><h6>Updates</h6></li>
-                    % if updates:
+                    % if defined('updates') and updates:
                         % for u in updates:
                         <li class="item">
                             <label for="id_{{ u._id }}">
