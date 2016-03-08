@@ -229,6 +229,14 @@ def update_list():
         title='Updates',
         item_id=None)
     result['has_duplicates'] = _query_duplicate_count('updates')
+    
+    # fix: Issue #7 [local-gogs]
+    # manually update the ids for projects to be returned
+    project_choices = []
+    for (_id, name) in result['project_choices']:
+        project_choices.append((_id.replace('_cf_', '_cu_'), name))
+    
+    result['project_choices'] = project_choices
     return result
 
 
