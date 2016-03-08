@@ -11,18 +11,22 @@ from kedat.core import Storage as _
 @view('account/login.tpl')
 def login():
     if request.method == 'POST':
-        session = get_session()['messages']
+        session = get_session()
+        session_msgs = session['messages']
 
         username = request.POST.get('username', '').strip()
         password = request.POST.get('password', '').strip()
         if username and password:
             logged_in = authnz.login(username, password)
             if logged_in:
-                return redirect('/')
+                # hack: get redirect url from session if available
+                redirect_url = session.get('login_redirect_url', '/')
+                session['login_redirect_url'] = None
+                return redirect(redirect_url)
 
-            session['fail'].append('Invalid username and/or password.')
+            session_msgs['fail'].append('Invalid username and/or password.')
         else:
-            session['warn'].append('Username and password required.')
+            session_msgs['warn'].append('Username and password required.')
     return {'title': 'Log In'}
 
 

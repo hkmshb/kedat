@@ -95,6 +95,16 @@ def make_auth_decorator(cork, username=None, role=None, fixed_role=False,
                     _args = dict(username=username, role=role, 
                                  fail_redirect=redirect_url,
                                  fixed_role=fixed_role)
+                    
+                    # hack: need login to be able to redirect to originally 
+                    # requested url led to authentication being performed...
+                    # there'z no easy way to change the publish API for require
+                    # here the original url shall be store at this point in a 
+                    # session variable to be used when and if login is eventually
+                    # called
+                    session = get_session()
+                    session['login_redirect_url'] = request.url
+                    
                     cork.require(**_args)
                 return func(*a, **kw)
             return wrapper
