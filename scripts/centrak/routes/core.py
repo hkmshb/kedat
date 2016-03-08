@@ -193,7 +193,7 @@ def capture_list():
         tbl = db.Capture,
         title = 'Captures',
         item_id=None )
-    result['has_duplicates'] = _query_duplicate_count
+    result['has_duplicates'] = _query_duplicate_count('captures')
     result['has_updates'] = _query_updates_count
     return result
 
@@ -224,11 +224,12 @@ def capture_view(item_id):
 @route('/updates/')
 @view('capture-list')
 def update_list():
-    return _query_capture(
+    result = _query_capture(
         tbl=db.Update,
         title='Updates',
-        item_id=None
-    )
+        item_id=None)
+    result['has_duplicates'] = _query_duplicate_count('updates')
+    return result
 
 
 @route('/updates/<item_id:int>/')
@@ -366,9 +367,17 @@ def _query_capture(tbl, title, item_id, paginate=True):
         }
 
 
-def _query_duplicate_count(record_id, rseq):
-    result = db.db.captures.count({'_id': {'$ne': record_id}, 'rseq': rseq})
-    return result
+def _query_duplicate_count(table_name):
+    def wrapper(record_id, rseq):
+        result = db.db[table_name]\
+                   .count({'_id': {'$ne': record_id}, 
+                           'rseq': rseq,
+                           '$or': [
+                                {'dropped': False},
+                                {'dropped': {'$exists': False}}
+                            ]})
+        return result
+    return wrapper
 
 
 def _query_updates_count(record_id, rseq):
